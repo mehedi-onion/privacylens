@@ -106,6 +106,15 @@ test('Chrome before documentId support is handled without raising the minimum ve
   assert.deepEqual(result.qualifiers, ['server_redirect']);
 });
 
+test('real Chromium compact document identifiers retain their exact identity', () => {
+  for (const documentId of ['ABCDEF0123456789ABCDEF0123456789', 'abcdef0123456789abcdef0123456789', documentA]) {
+    assert.equal(normalizeNavigation(committed({ documentId }))?.documentId, documentId);
+  }
+  for (const documentId of ['ABCDEF0123456789ABCDEF012345678', 'ABCDEF0123456789ABCDEF01234567890', 'GBCDEF0123456789ABCDEF0123456789']) {
+    assert.equal(normalizeNavigation(committed({ documentId })), null);
+  }
+});
+
 function event() {
   const listeners = new Set();
   return { addListener: handler => listeners.add(handler), removeListener: handler => listeners.delete(handler),
@@ -140,6 +149,21 @@ function fixture() {
   return { api, tabs, webNavigation, queries, frames, pendingQueries, pendingFrames, context };
 }
 const read = (observer, tabId = 7) => new Promise(resolve => observer.read(tabId, resolve));
+
+test('compact Chromium identifiers expose the observed redirect but reject a replacement document', async () => {
+  const f = fixture();
+  const documentId = 'ABCDEF0123456789ABCDEF0123456789';
+  f.context.frame.documentId = documentId;
+  const observer = createNavigationObserver(f.api, clock());
+  f.webNavigation.onCommitted.emit(committed({ documentId, transitionQualifiers: ['server_redirect'] }));
+  const result = await read(observer);
+  assert.equal(result.available, true);
+  assert.deepEqual(result.snapshot.qualifiers, ['server_redirect']);
+  assert.equal(result.snapshot.documentId, undefined);
+  f.context.frame.documentId = '0123456789ABCDEF0123456789ABCDEF';
+  assert.equal((await read(observer)).available, false);
+  observer.dispose();
+});
 
 test('observer registers synchronously and performs no startup lookup or backfill', async () => {
   const f = fixture(); const observer = createNavigationObserver(f.api, clock());

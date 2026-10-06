@@ -20,7 +20,8 @@ export function normalizeNavigation(event) {
       (event.documentLifecycle !== undefined && event.documentLifecycle !== 'active') ||
       (event.frameType !== undefined && event.frameType !== 'outermost_frame')) return null;
   const documentId = event.documentId;
-  if (documentId !== undefined && (typeof documentId !== 'string' || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(documentId))) return null;
+  // Chromium also returns compact UUIDs; preserve the exact browser identifier for correlation.
+  if (documentId !== undefined && (typeof documentId !== 'string' || !/^(?:[a-f0-9]{32}|[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})$/i.test(documentId))) return null;
   const destination = navigationOrigin(event.url);
   if (!destination) return null;
   // No paths, queries, fragments, credentials, previous URLs or event timestamps.
