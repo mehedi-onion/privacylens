@@ -18,10 +18,10 @@ export function adviseReputation(local, report) {
   const status = local?.status === 'High Attention' || counts.malicious >= 3 && strongLocal ? 'High Attention' :
     local?.status === 'Review' || flags > 0 ? 'Review' : 'Normal';
   return { status, label: !verdicts ? 'No vendor verdicts available' : !flags ? 'No strong warning found' :
-    flags >= 3 ? 'Multiple engines flagged this domain' : 'Some security engines flagged this domain',
+    flags >= 3 ? 'Multiple VirusTotal engines flagged this domain' : 'A few VirusTotal engines flagged this domain',
     explanation: counts.malicious >= 3 && strongLocal
       ? 'At least three vendors reported malicious results, and the URL contains both a brand/domain mismatch and username/@ syntax. Review these signals together before sharing information.'
-      : flags > 0 ? 'Vendor flags are external review signals, not confirmed misuse. Review the source and the local URL findings.'
-        : 'No strong external warning was returned. Existing local review findings still apply.',
+      : flags > 0 ? 'These vendor flags are not proof of abuse. Check the source and the local address findings.'
+        : 'VirusTotal returned no strong warning. Any local findings still apply.',
     caveat: 'VirusTotal aggregates detections from multiple security vendors. A clean result does not guarantee safety. Existing reports may be old or incomplete.' };
 }

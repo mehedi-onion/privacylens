@@ -2,14 +2,14 @@
 export const permissionDefinitions = [
   {
     id: 'camera', name: 'Camera', states: ['allow', 'block', 'ask'], sensitive: true,
-    allows: 'The site may use your camera when browser and device rules permit it.',
+    allows: 'The site may use your camera if browser and device settings allow it.',
     legitimateUses: 'Video calls, QR scanning, or identity verification.',
     reviewWhen: 'There is no camera feature you use, access was allowed accidentally, or you no longer need the feature.',
     recommendation: 'Keep camera access blocked unless you actively use a feature that needs it.'
   },
   {
     id: 'microphone', name: 'Microphone', states: ['allow', 'block', 'ask'], sensitive: true,
-    allows: 'The site may capture microphone audio when browser and device rules permit it.',
+    allows: 'The site may record audio if browser and device settings allow it.',
     legitimateUses: 'Voice calls, voice messages, or speech input.',
     reviewWhen: 'There is no audio feature you use, access was allowed accidentally, or you have finished using it.',
     recommendation: 'Keep microphone access blocked unless you need an audio feature.'
@@ -23,14 +23,14 @@ export const permissionDefinitions = [
   },
   {
     id: 'notifications', name: 'Notifications', states: ['allow', 'block', 'ask'], sensitive: false,
-    allows: 'The site may show browser notifications, subject to browser and system rules.',
+    allows: 'The site may show notifications. Browser and system settings can still limit them.',
     legitimateUses: 'Message alerts, appointment reminders, or updates you requested.',
     reviewWhen: 'Alerts are unwanted, were enabled by mistake, or are no longer useful.',
     recommendation: 'Allow notifications only for sites whose alerts you want.'
   },
   {
     id: 'popups', name: 'Pop-ups', states: ['allow', 'block'], sensitive: false,
-    allows: 'The site may open pop-up windows under this content setting.',
+    allows: 'This browser setting allows the site to open pop-up windows.',
     legitimateUses: 'A sign-in window, a payment step, or a separate document view.',
     reviewWhen: 'Windows open unexpectedly, or you no longer need the feature that required them.',
     recommendation: 'Keep pop-ups blocked unless a feature you trust needs them.'

@@ -13,7 +13,7 @@ export function renderReputation(document, report, advice) {
   const container = document.getElementById('vt-result'); container.replaceChildren();
   const heading = document.createElement('p'); heading.textContent = advice.label;
   const status = document.createElement('p'); status.className = 'status'; status.dataset.status = advice.status;
-  status.textContent = `URL + reputation guidance: ${advice.status}`;
+  status.textContent = `Address and VirusTotal: ${advice.status}`;
   const source = document.createElement('p'); source.textContent = `Checked hostname: ${report.hostname}`;
   container.append(heading, status, source);
   const list = document.createElement('dl'); list.className = 'vt-counts';
@@ -27,8 +27,8 @@ export function renderReputation(document, report, advice) {
     const count = document.createElement('dd'); count.textContent = String(report.timeout); list.append(term, count);
   }
   container.append(list);
-  for (const [label, text] of [['What was noticed', `VirusTotal vendors returned ${report.counts.malicious} malicious and ${report.counts.suspicious} suspicious verdicts for this hostname.`],
-    ['Why this matters', advice.explanation], ['Consider', 'Compare the source with an independent official address and keep reviewing any local findings. Vendor results are only one source of evidence.']]) {
+  for (const [label, text] of [['What was noticed', `VirusTotal reports ${report.counts.malicious} malicious and ${report.counts.suspicious} suspicious vendor verdicts for this hostname.`],
+    ['Why this matters', advice.explanation], ['Consider', 'Check the official address through a source you trust. Keep the local findings in mind too.']]) {
     const paragraph = document.createElement('p'); const title = document.createElement('strong'); title.textContent = `${label}: `;
     paragraph.append(title, document.createTextNode(text)); container.append(paragraph);
   }

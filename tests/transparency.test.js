@@ -18,13 +18,13 @@ const report = normalizeReport({ data: { type: 'domain', id: 'google.com', attri
   { malicious: 0, suspicious: 1, harmless: 72, undetected: 15 } } } }, 'google.com');
 
 for (const [label, wording] of [
-  ['Normal', 'No current signal from these checks needs your attention.'],
-  ['Review', 'PrivacyLens found something worth checking before you share sensitive information or grant access.'],
-  ['High Attention', 'Several strong privacy or security signals deserve careful review.']
+  ['Normal', 'Nothing here needs your attention right now.'],
+  ['Review', 'Something here is worth checking before you share sensitive information or allow access.'],
+  ['High Attention', 'Several strong warning signs need a closer look.']
 ]) test(`${label} has the intended plain-language summary`, () => assert.equal(statusCopy[label], wording));
 test('status copy avoids safety verdicts and immediately qualifies Normal', () => {
   assert.doesNotMatch(Object.values(statusCopy).join(' '), /\b(?:safe|unsafe|malware|spyware|guaranteed|phishing confirmed)\b/i);
-  assert.equal(normalCaveat, 'This does not guarantee that a website is safe.');
+  assert.equal(normalCaveat, 'These checks cannot prove a site is safe.');
 });
 test('evidence states distinguish unchecked/unavailable from no review and include words, not only color', () => {
   assert.equal(evidenceLabel({ checked: false }), '— Not checked');
@@ -142,7 +142,7 @@ test('data table accurately distinguishes external lookup, API-key authenticatio
 test('transparency renderer uses native details, scoped row headers and text-only metadata', () => {
   const document = documentFixture(); renderTransparency(document);
   const rows = document.getElementById('permission-uses').children; assert.equal(rows.length, 8);
-  for (const details of rows) { assert.equal(details.tag, 'details'); assert.equal(details.children[0].tag, 'summary'); assert.match(details.textContent, /Why.*What PrivacyLens does.*What it does not do.*Chrome capability boundary/); }
+  for (const details of rows) { assert.equal(details.tag, 'details'); assert.equal(details.children[0].tag, 'summary'); assert.match(details.textContent, /Why.*What PrivacyLens does.*What it does not do.*What Chrome also allows/); }
   for (const row of document.getElementById('boundary-rows').children) { assert.equal(row.children[0].tag, 'th'); assert.equal(row.children[0].attributes.scope, 'row'); }
   assert.equal(document.getElementById('limitation-list').children.length, 7);
 });
@@ -162,7 +162,7 @@ test('transparency has headings, navigable table caption, keyboard focus and no 
   const html = await read('src/transparency/transparency.html');
   assert.match(html, /<h1>PrivacyLens transparency/); assert.match(html, /<caption>PrivacyLens feature data boundaries/);
   assert.match(html, /aria-label="Feature data boundaries" tabindex="0"/); assert.match(html, /scope="col"/);
-  assert.match(html, /Audit PrivacyLens/); assert.match(html, /not a self-awarded safety score/); assert.match(html, /chrome:\/\/extensions/);
+  assert.match(html, /Audit PrivacyLens/); assert.match(html, /rather than giving itself a trust score/); assert.match(html, /chrome:\/\/extensions/);
   for (const file of ['src/popup/popup.css', 'src/extensions/extensions.css', 'src/options/options.css', 'src/transparency/transparency.css']) assert.match(await read(file), /:focus-visible/);
 });
 function workerFixture(kind = 'report') {

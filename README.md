@@ -2,13 +2,13 @@
 
 **Understand what websites and browser extensions can access before you trust them.**
 
-PrivacyLens is a privacy-focused browser extension that explains what a website or browser extension can access and highlights signals worth reviewing. Most checks happen locally, and PrivacyLens does not keep browsing history.
+PrivacyLens helps you understand what a website or browser extension can access and what may need a closer look. Most checks happen locally. It does not keep your browsing history.
 
-This early prototype explains the current address, site permissions, installed-extension capabilities, page structure after a click, recent temporary download metadata and Chrome-reported navigation. An optional VirusTotal domain lookup sends a hostname and your authentication key only after confirmation. It works without VirusTotal. **Milestone 8** makes these boundaries and explanations easier to understand; it adds no detection subsystem or privileges.
+This is an early student-built prototype. It checks the current address, explains site and extension permissions, and scans page structure when you ask. It also explains recent download details and redirects reported by Chrome. VirusTotal is optional: only a confirmed lookup sends the hostname and your API key. The local tools work without it.
 
 **See → Understand → Decide → Forget.**
 
-It analyzes signals, not intent. A warning means **“review this”**, not **“this site is malicious.”** Normal is not a guarantee of safety. PrivacyLens does not provide antivirus functionality, malware detection, guaranteed phishing detection, or complete browser protection.
+A warning means **“take a closer look”**, not **“this site is malicious.”** PrivacyLens cannot know what a site will do. It is not antivirus software and cannot promise phishing detection or complete browser protection.
 
 ## Load in Chrome or Chromium
 
@@ -57,9 +57,9 @@ The overall website label combines address, site-setting, navigation and explici
 
 | Overall label | Plain-language guidance |
 | --- | --- |
-| Normal | No current signal from these checks needs your attention. This does not guarantee that a website is safe. |
-| Review | PrivacyLens found something worth checking before you share sensitive information or grant access. |
-| High Attention | Several strong privacy or security signals deserve careful review. |
+| Normal | Nothing here needs your attention right now. These checks cannot prove a site is safe. |
+| Review | Something here is worth checking before you share sensitive information or allow access. |
+| High Attention | Several strong warning signs need a closer look. |
 
 Open **Audit PrivacyLens · transparency** from the popup, extension audit or settings. The [transparency page](src/transparency/transparency.html) explains every permission, the difference between Chrome's technical powers and PrivacyLens's actual read-only use, [data boundaries](docs/privacy.md), and what these checks cannot know. It gives instructions for comparing PrivacyLens with Chrome's own extension details, without awarding itself a trust score. Every review explanation distinguishes what was noticed, why it might matter and what you can consider doing.
 

@@ -77,7 +77,7 @@ test('popup shows six actual states, all explanations, and separate permission r
     contentSettings: settingsApi({ camera: 'allow', microphone: 'allow', location: 'allow', notifications: 'ask' }) }, document);
   assert.equal(document.getElementById('status').textContent, 'Review');
   assert.equal(document.getElementById('findings').children.length, 1);
-  assert.match(document.getElementById('permission-notes').textContent, /several sensitive permissions/);
+  assert.match(document.getElementById('permission-notes').textContent, /still need camera, microphone and location access/);
   const rows = document.getElementById('site-permissions').children;
   assert.equal(rows.length, 6);
   assert.deepEqual(rows.map(row => row.children[0].textContent), [

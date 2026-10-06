@@ -128,7 +128,7 @@ test('powerful capabilities require broad hosts to reach High Attention', () => 
     const result = advice({ permissions: [permission], hostPermissions: ['https://*/*'] });
     assert.equal(result.status, 'High Attention');
     assert.match(result.reasons.join(' '), new RegExp(permission));
-    assert.match(result.reasons.join(' '), /several powerful permissions/);
+    assert.match(result.reasons.join(' '), /can access a lot.*permissions make sense/);
     assert.doesNotMatch(JSON.stringify(result), /spyware|steals data|is malicious/);
   }
 });
@@ -137,7 +137,7 @@ test('disabled items preserve capability labels while clearly disclaiming curren
   const result = advice({ enabled: false, permissions: ['history'], hostPermissions: ['<all_urls>'] });
   assert.equal(result.stateLabel, 'Disabled');
   assert.equal(result.status, 'Review');
-  assert.match(result.stateExplanation, /if the extension is enabled.*not a claim of current activity/);
+  assert.match(result.stateExplanation, /if you enable it.*do not mean it is active now/);
   assert.equal(advice({ enabled: true }).stateLabel, 'Enabled');
 });
 
@@ -284,7 +284,7 @@ test('audit displays Chrome warnings safely as text without internal IDs or muta
   await createAuditController(api, document).refresh();
   const list = document.getElementById('extension-list');
   assert.equal(list.children[0].tag, 'details');
-  assert.match(list.textContent, /Chrome-generated permission warnings.*<img src=x> warning text/);
+  assert.match(list.textContent, /Chrome permission warnings.*<img src=x> warning text/);
   assert.match(list.textContent, /<script>sample<\/script>/);
   assert.doesNotMatch(list.textContent, /other-id/);
   assert.equal(document.getElementById('audit').attributes['aria-busy'], 'false');
@@ -296,7 +296,7 @@ test('Chrome warning text is displayed without turning warnings into behavior cl
   await createAuditController(api, document).refresh();
   assert.match(document.getElementById('extension-list').textContent, /A localized browser warning/);
   assert.match(document.getElementById('extension-list').textContent, /A sample notes tool/);
-  assert.match(document.getElementById('inventory-summary').textContent, /0 with review signals/);
+  assert.match(document.getElementById('inventory-summary').textContent, /0 worth reviewing/);
 });
 
 test('a later read wins and an older response cannot restore an earlier inventory', async () => {

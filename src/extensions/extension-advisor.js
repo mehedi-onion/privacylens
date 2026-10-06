@@ -50,7 +50,7 @@ export function adviseExtension(item) {
   const reasons = [];
   if (broad) reasons.push('Chrome reports host access across many websites.');
   for (const permission of item.permissions.filter(permission => reviewPermissions.has(permission))) {
-    reasons.push(`The ${permission} permission gives privacy-relevant capability; compare its explanation with the extension’s purpose.`);
+    reasons.push(`Check whether ${permission} access makes sense for what you use this extension for.`);
   }
   const has = permission => item.permissions.includes(permission);
   if (has('history') && has('cookies')) reasons.push('History and cookies appear together. Review whether access to visited sites and session information both fit the intended features.');
@@ -61,13 +61,13 @@ export function adviseExtension(item) {
     reasons.push('Some metadata or host patterns could not be fully interpreted. Review the browser’s details.');
   }
   const highAttention = broad && powerful.length > 0;
-  if (highAttention) reasons.push(`Broad host access is combined with ${powerful.join(', ')}. This extension has several powerful permissions. Review whether they match what the extension is supposed to do.`);
+  if (highAttention) reasons.push(`Access to many websites is combined with ${powerful.join(', ')}. This extension can access a lot. Check whether those permissions make sense for what you use it for.`);
   // IDs are deliberately omitted from the display model.
   return { name: item.name, description: item.description, type: item.type, version: item.version, installType: item.installType,
     enabled: item.enabled, stateLabel: item.enabled === true ? 'Enabled' : item.enabled === false ? 'Disabled' : 'State unavailable',
     stateExplanation: item.enabled === false
-      ? 'Disabled: these are listed capabilities if the extension is enabled, not a claim of current activity.'
-      : 'Enabled state does not show whether a capability is being used.',
+      ? 'Disabled: these permissions apply if you enable it. They do not mean it is active now.'
+      : 'Enabled does not mean every permission is being used.',
     status: highAttention ? 'High Attention' : reasons.length ? 'Review' : 'Normal',
     reasons, permissionDetails, hostDetails,
     capabilitySummary: [
@@ -82,7 +82,7 @@ export function adviseExtension(item) {
       ...(has('clipboardRead') ? ['Can read clipboard content'] : [])
     ].slice(0, 3),
     warnings: item.warnings ?? [], warningsAvailable: item.warningsAvailable === true,
-    recommendation: 'Review whether the listed capabilities match the features you use. Permissions indicate capability, not actual misuse.' };
+    recommendation: 'Check whether these permissions fit the features you use.' };
 }
 
 export function filterExtensions(items, query = '', status = 'all') {

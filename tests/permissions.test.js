@@ -115,7 +115,7 @@ test('all three sensitive permissions justify Review, never High Attention', () 
   const advice = advisePermissions(readingsFor({ camera: 'allow', microphone: 'allow', location: 'allow' }));
   assert.equal(advice.status, 'Review');
   assert.equal(advice.notes.length, 1);
-  assert.match(advice.notes[0].suggestion, /Review whether you still need them/);
+  assert.match(advice.notes[0].suggestion, /Review whether you still need camera, microphone and location access/);
   assert.equal(advisePermissions(readingsFor({ camera: 'allow', microphone: 'allow' })).status, 'Normal');
   assert.equal(combineStatuses('Normal', advice.status), 'Review');
   assert.equal(combineStatuses('Review', advice.status), 'Review');
@@ -132,7 +132,7 @@ test('unknown and duplicate IDs do not manufacture a sensitive permission combin
 test('effective Ask and Unavailable explain platform limits without guessing defaults', () => {
   const advice = advisePermissions([{ id: 'camera', state: 'ask' }, { id: 'location', state: 'unavailable', reason: 'read-failed' }]);
   assert.equal(advice.permissions[0].label, 'Ask');
-  assert.match(advice.permissions[0].stateExplanation, /does not identify.*default/);
+  assert.match(advice.permissions[0].stateExplanation, /does not say.*browser default/);
   assert.equal(advice.permissions[2].label, 'Unavailable');
   assert.equal(advice.status, 'Normal');
 });

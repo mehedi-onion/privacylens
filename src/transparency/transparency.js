@@ -10,7 +10,7 @@ export function renderTransparency(document) {
     const details = document.createElement('details'); const summary = document.createElement('summary');
     summary.textContent = `${entry.title} — ${entry.permission}${entry.optional ? ' (optional)' : ''}`; details.append(summary);
     for (const [label, text] of [['Why', entry.why], ['What PrivacyLens does', entry.uses],
-      ['What it does not do', entry.doesNot], ['Chrome capability boundary', entry.boundary]]) paragraph(details, label, text);
+      ['What it does not do', entry.doesNot], ['What Chrome also allows', entry.boundary]]) paragraph(details, label, text);
     permissions.append(details);
   }
   const rows = document.getElementById('boundary-rows'); rows.replaceChildren();

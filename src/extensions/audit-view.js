@@ -39,8 +39,8 @@ export function renderAudit(document, inventory, shown) {
     return;
   }
   const needsReview = inventory.items.filter(item => item.status !== 'Normal').length;
-  document.getElementById('inventory-summary').textContent = `${inventory.items.length} extensions shown · ${needsReview} with review signals · ${shown.length} match the filter`;
-  document.getElementById('inventory-note').textContent = `PrivacyLens itself, apps, and themes are omitted. Review counts include disabled extensions and describe listed capabilities, not activity.${inventory.skipped ? ` ${inventory.skipped} malformed or duplicate records could not be included.` : ''}`;
+  document.getElementById('inventory-summary').textContent = `${inventory.items.length} extensions shown · ${needsReview} worth reviewing · ${shown.length} match the filter`;
+  document.getElementById('inventory-note').textContent = `PrivacyLens, apps and themes are left out. Disabled extensions are included in the review count.${inventory.skipped ? ` ${inventory.skipped} unreadable or duplicate records could not be shown.` : ''}`;
   if (!shown.length) {
     list.append(paragraph(document, inventory.items.length ? 'No extensions match this search or filter.' : 'No other extension items were returned for this audit.', 'empty'));
   }
@@ -58,17 +58,17 @@ export function renderAudit(document, inventory, shown) {
     const capabilities = document.createElement('span');
     capabilities.className = 'capabilities';
     capabilities.textContent = item.capabilitySummary.length ? item.capabilitySummary.join(' · ')
-      : 'Expand to review the browser-reported permissions and their explanations.';
+      : 'Open to see its permissions and what they allow.';
     summary.append(capabilities);
     details.append(summary);
     if (item.description) details.append(paragraph(document, item.description, 'metadata'));
     details.append(paragraph(document, `Type: ${item.type === 'login_screen_extension' ? 'Login-screen extension' : 'Extension'}${item.version ? ` · Version: ${item.version}` : ''}${item.installType ? ` · Install type: ${item.installType}` : ''}`, 'metadata'));
     details.append(paragraph(document, item.stateExplanation));
-    section(document, details, 'What was noticed', item.reasons.length ? item.reasons : ['No review rule matched these limited capability checks. Normal is not a guarantee of safety.']);
-    details.append(paragraph(document, 'Why this matters: These are listed capabilities, not proof of behavior. Review whether they match the features you use.'));
+    section(document, details, 'What was noticed', item.reasons.length ? item.reasons : ['Nothing in this permission check needs attention. It cannot tell you everything about the extension.']);
+    details.append(paragraph(document, 'Why this matters: Permissions show how much access an extension has. They do not show how it uses that access.'));
     details.append(paragraph(document, `Consider: ${item.recommendation}`));
     const permissionsHeading = document.createElement('h2');
-    permissionsHeading.textContent = 'API permissions reported by Chrome';
+    permissionsHeading.textContent = 'Permissions listed by Chrome';
     details.append(permissionsHeading);
     const permissionList = document.createElement('ul');
     for (const permission of item.permissionDetails) {
@@ -83,8 +83,8 @@ export function renderAudit(document, inventory, shown) {
     section(document, details, 'Host access reported by Chrome', item.hostDetails.length
       ? item.hostDetails.map(host => `${host.pattern} — ${host.explanation} ${host.recommendation}`)
       : ['No host patterns listed in the returned data. This is not a complete original manifest or a guarantee of no page access.']);
-    section(document, details, 'Chrome-generated permission warnings', item.warningsAvailable
-      ? item.warnings.length ? item.warnings : ['Chrome returned no permission warnings. This is not a safety guarantee.']
+    section(document, details, 'Chrome permission warnings', item.warningsAvailable
+      ? item.warnings.length ? item.warnings : ['Chrome returned no permission warnings. This does not tell us how the extension behaves.']
       : ['Chrome permission warnings could not be read. Other reported metadata is still shown.']);
     list.append(details);
   }

@@ -2,18 +2,18 @@ import { permissionDefinitions, permissionStateLabels } from './permission-defin
 
 const unavailableExplanations = {
   'unsupported-page': 'Only HTTP and HTTPS website settings can be checked here.',
-  'unsupported-api': 'This browser does not expose this content-setting reader.',
+  'unsupported-api': 'This browser does not let PrivacyLens read this site setting.',
   'read-failed': 'The browser could not return this setting. Check it in the browser’s site settings.',
-  'invalid-response': 'The browser returned an unrecognized setting. PrivacyLens has not guessed a state.'
+  'invalid-response': 'PrivacyLens did not recognize the browser’s answer, so it cannot show this setting.'
 };
 
 function explainState(state, reason) {
   if (state === 'unavailable') {
     return unavailableExplanations[reason] ?? 'This setting could not be read. Check the browser’s site settings.';
   }
-  if (state === 'allow') return 'The browser reports Allowed. This does not show whether the site is using the feature; other browser or device rules may still prevent access.';
-  if (state === 'block') return 'The browser reports Blocked for this content setting.';
-  return 'The browser reports Ask. It does not identify whether this comes from a default or a site-specific choice.';
+  if (state === 'allow') return 'Your browser says Allowed. That shows permission, not current use. Other browser or device settings may still prevent access.';
+  if (state === 'block') return 'Your browser says this feature is blocked for the site.';
+  return 'Your browser says Ask. It does not say whether this is the browser default or a choice for this site.';
 }
 
 export function advisePermissions(readings = []) {
@@ -29,8 +29,8 @@ export function advisePermissions(readings = []) {
     id: 'several-sensitive-permissions', level: 'review',
     title: 'Several sensitive settings are allowed',
     detected: 'Camera, microphone, and location are all Allowed in the browser’s content settings.',
-    why: 'These features may be useful together. A setting alone does not show use or misuse.',
-    suggestion: 'This site currently has several sensitive permissions. Review whether you still need them.'
+    why: 'Some features need all three. These settings do not tell us whether the site is using them.',
+    suggestion: 'Review whether you still need camera, microphone and location access on this site.'
   }] : [];
   return { permissions, notes, status: notes.length ? 'Review' : 'Normal' };
 }

@@ -355,7 +355,7 @@ test('first click selects sanitized hostname and shows consent without lookup or
 });
 test('no-key first click gives settings guidance and never requests host permission', async () => {
   const { api, document, messages, grants } = uiFixture(false); const controller = createReputationController(api, document);
-  await controller.begin(); await controller.confirm(); assert.match(document.getElementById('vt-result').textContent, /No VirusTotal key/);
+  await controller.begin(); await controller.confirm(); assert.match(document.getElementById('vt-result').textContent, /Add your own VirusTotal key in settings/);
   assert.equal(document.getElementById('vt-consent').hidden, true); assert.equal(messages.length, 1); assert.equal(grants(), 0);
 });
 test('second explicit confirmation grants exact optional host, sends only selected hostname and renders counts', async () => {
@@ -366,7 +366,7 @@ test('second explicit confirmation grants exact optional host, sends only select
   assert.deepEqual(Object.keys(request).sort(), ['type', 'hostname', 'tabId', 'confirmed', 'requestId'].sort());
   assert.equal(request.hostname, 'accounts.google.com'); assert.equal(request.confirmed, true);
   assert.doesNotMatch(JSON.stringify(request), /login|private-query|private-fragment/);
-  assert.match(document.getElementById('vt-result').textContent, /Some security engines.*Malicious0Suspicious1Harmless72Undetected15/);
+  assert.match(document.getElementById('vt-result').textContent, /A few VirusTotal engines.*Malicious0Suspicious1Harmless72Undetected15/);
   assert.match(document.getElementById('vt-result').textContent, /does not guarantee safety/); assert.equal(report.hostname, request.hostname);
 });
 test('cancelling disclosure and denying host grant both avoid sending a lookup', async () => {
@@ -413,9 +413,9 @@ test('malformed and unknown message responses render only fixed safe errors', as
   const { api, document } = uiFixture(); api.runtime.sendMessage = (value, callback) => callback(value.type.endsWith('status')
     ? { kind: 'key-status', configured: true } : { kind: 'constructor', error: sampleKey });
   const controller = createReputationController(api, document); await controller.begin(); await controller.confirm();
-  assert.match(document.getElementById('vt-result').textContent, /unreadable or incomplete/);
+  assert.match(document.getElementById('vt-result').textContent, /could not read.*no result to show/);
   assert.doesNotMatch(document.getElementById('vt-result').textContent, new RegExp(sampleKey));
-  showReputationMessage(document, '__proto__'); assert.match(document.getElementById('vt-result').textContent, /unreadable/);
+  showReputationMessage(document, '__proto__'); assert.match(document.getElementById('vt-result').textContent, /could not read.*no result to show/);
 });
 test('options status never returns or prefills a key; Save is explicit session mode by default', async () => {
   const fixture = uiFixture(false); const controller = createOptionsController(fixture.api, fixture.document);
