@@ -281,7 +281,7 @@ test('worker reads configured key internally, persists only anonymous counters a
   const store = registerReputationWorker(fixture.api, { now: () => DAY_MS, lookup: async (hostname, key) => {
     calls++; assert.equal(hostname, 'accounts.google.com'); assert.equal(key, sampleKey); return { kind: 'report', report };
   } }); await store.save(sampleKey, false);
-  const result = await fixture.message(lookupMessage()); assert.deepEqual(result, { kind: 'report', report });
+  const result = await fixture.message(lookupMessage()); assert.deepEqual(result, { kind: 'report', report, transmission: 'shared' });
   assert.deepEqual(await fixture.message(lookupMessage()), { kind: 'rate-limit' }); assert.equal(calls, 1);
   assert.deepEqual(fixture.buffers.local, {});
   assert.deepEqual(Object.keys(fixture.buffers.session).sort(), [KEY_SLOT, QUOTA_SLOT].sort());
@@ -293,7 +293,7 @@ test('worker honors 429 without retrying and enforces cooldown after recreation'
   const fixture = chromeFixture(); let calls = 0; const dependencies = { now: () => DAY_MS + 1000,
     lookup: async () => { calls++; return { kind: 'rate-limit', retryAfterMs: 60000, quotaExceeded: true }; } };
   await registerReputationWorker(fixture.api, dependencies).save(sampleKey, false);
-  assert.deepEqual(await fixture.message(lookupMessage()), { kind: 'rate-limit' });
+  assert.deepEqual(await fixture.message(lookupMessage()), { kind: 'rate-limit', transmission: 'shared' });
   registerReputationWorker(fixture.api, dependencies); assert.deepEqual(await fixture.message(lookupMessage()), { kind: 'rate-limit' }); assert.equal(calls, 1);
 });
 test('worker cancellation and Forget abort in-flight lookup without restoring a closed result', async () => {
@@ -304,7 +304,7 @@ test('worker cancellation and Forget abort in-flight lookup without restoring a 
     } }); await store.save(sampleKey, false); const task = fixture.message(lookupMessage()); await turn();
     await fixture.message({ type: action, requestId: 'lookup-test' }, action.endsWith('forget-key') ? 'options' : 'popup');
     assert.equal(signal.aborted, true); finish({ kind: 'report', report: normalizeReport(payload(), 'accounts.google.com') });
-    assert.deepEqual(await task, { kind: 'cancelled' });
+    assert.deepEqual(await task, { kind: 'cancelled', transmission: 'shared' });
   }
 });
 test('worker permits only one pending request and leaks no raw exception', async () => {
@@ -312,7 +312,7 @@ test('worker permits only one pending request and leaks no raw exception', async
   const store = registerReputationWorker(fixture.api, { lookup: async () => new Promise((_resolve, reject) => { finish = reject; }) });
   await store.save(sampleKey, false); const task = fixture.message(lookupMessage()); await turn();
   assert.deepEqual(await fixture.message(lookupMessage()), { kind: 'busy' }); finish(new Error(sampleKey));
-  assert.deepEqual(await task, { kind: 'unavailable' });
+  assert.deepEqual(await task, { kind: 'unavailable', transmission: 'possible' });
 });
 test('unsupported optional storage support leaves local features untouched', async () => {
   const fixture = chromeFixture(); delete fixture.api.storage.session;

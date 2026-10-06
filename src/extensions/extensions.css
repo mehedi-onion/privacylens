@@ -36,3 +36,9 @@ footer p { margin: 4px 0; }
   .extension-row, footer { border-color: #47554b; }
   .status[data-status="Review"], .status[data-status="High Attention"] { background: #3e351f; color: #f2d69a; }
 }
+
+a { color: inherit; }
+.source-label { font-size: 11px; color: #57665e; }
+@media (prefers-color-scheme: dark) { .source-label { color: #bdcbbf; } }
+
+@media (prefers-color-scheme: dark) { :focus-visible { outline-color: #b3d1bb; } }

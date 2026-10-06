@@ -19,11 +19,18 @@ export function registerReputationWorker(chromeApi, { lookup = lookupDomain, now
     if (controller.signal.aborted) return { kind: 'cancelled' };
     if (!await limiter.reserve()) return { kind: 'rate-limit' };
     if (controller.signal.aborted) return { kind: 'cancelled' };
-    const result = await lookup(message.hostname, key, { signal: controller.signal });
-    if (result.kind === 'rate-limit') await limiter.cooldown(result.retryAfterMs, result.quotaExceeded);
-    if (controller.signal.aborted) return { kind: 'cancelled' };
+    let result;
+    try { result = await lookup(message.hostname, key, { signal: controller.signal }); }
+    catch { return { kind: 'unavailable', transmission: 'possible' }; }
+    const transmission = ['report', 'invalid-key', 'restricted', 'not-found', 'rate-limit', 'server-error', 'invalid-request', 'invalid-response'].includes(result.kind)
+      ? 'shared' : ['no-key', 'invalid-domain'].includes(result.kind) ? 'none' : 'possible';
+    if (result.kind === 'rate-limit') {
+      try { await limiter.cooldown(result.retryAfterMs, result.quotaExceeded); }
+      catch { return { kind: 'unavailable', transmission }; }
+    }
+    if (controller.signal.aborted) return { kind: 'cancelled', transmission };
     // No response cache, raw payload, domain list or report written to any storage area.
-    return result.kind === 'report' ? { kind: 'report', report: result.report } : { kind: result.kind };
+    return result.kind === 'report' ? { kind: 'report', report: result.report, transmission } : { kind: result.kind, transmission };
   }
   chromeApi.runtime.onMessage.addListener((message, sender, respond) => {
     if (sender?.id !== chromeApi.runtime.id || sender.tab?.incognito === true) return false;

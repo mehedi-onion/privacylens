@@ -1,3 +1,28 @@
+# Milestone 8 verification
+
+Verified October 7, 2026 against published baseline `af35fbff0b929d2051db609c4d9bd213cdc195ce`.
+
+- **290 tests passed, 0 failed**: all 250 baseline tests retained, plus 40 guidance/transparency/privacy/accessibility cases. Existing UI assertions now use What was noticed / Why this matters / Consider; worker assertions include the new temporary transmission-state enum. No risk thresholds changed.
+- All **56 JavaScript files** pass syntax checks; JSON, relative imports, local HTML assets, version consistency and Git whitespace pass. Manifest differs only by version 0.8.0: no required/optional permission, host, CSP or Chrome-minimum change.
+- Source and complete-project secret/privacy scans pass with legitimate existing VT/key-storage/active-tab/host-explanation references classified in [security-audit-m8.md](security-audit-m8.md). No secret values, extra endpoint, result storage, telemetry, mutation or history database found. Request adapter, key-store and quota-limiter are unchanged.
+- Status summaries and per-source states are explicit. Normal includes its no-guarantee caveat. Website overview rules remain URL/site/navigation/requested-reputation; page/download labels stay separate. Review explanations identify observation, reason and consideration. No permission is treated as proof of activity or intent.
+- Privacy summary correctly distinguishes not checked/unavailable, local reads, external sharing after confirmation, possible transmission after failure/cancellation, and existing key/quota memory. HTTP errors do not erase transmission disclosure; clearing a report cannot conceal prior sharing in the same popup.
+- Native details/summary controls, headings, labels, live status text, explicit status words/symbols, table caption/row-column scopes, focusable overflow and visible light/dark focus support accessibility. Contrast checks cover reading text and focus. Assistive technology integration still needs personal Chrome review.
+
+## Presentation preview
+
+Actual modules were previewed locally with synthetic Chrome APIs and a mocked request adapter: A Normal, B brand Review, C combined synthetic High Attention, D three allowed sensitive site settings, E explicit structural page scan, F redirect/context guidance, G temporary double-extension download, H vendor result plus failed authentication and sticky sharing disclosure, I dedicated extension audit, J transparency. Keyboard expansion, readable light/dark layouts and absence of console warnings/errors were checked. Popup preview image is outside the repository. No real key, inventory, file contents or live reputation request was used.
+
+A preview is not actual MV3 loading or lifecycle verification. The [current manual checklist](manual-testing.md) covers real Chrome prompts, popup sizing, direct/redirect/page/download cases, keyboard/screen reader, profile/session cleanup and optional live VirusTotal request with a fresh private key.
+
+## Publication scope
+
+Milestone 8 is one separate commit: `feat: improve PrivacyLens trust and privacy transparency`, normally pushed to origin/main. No later milestone or new scanner is included. The [privacy table](privacy.md) and bundled transparency page distinguish temporary memory from optional key persistence and authentication transmission.
+
+---
+
+The following sections are historical verification records.
+
 # Milestone 7 verification
 
 Verified October 7, 2026 against the published redirect-awareness baseline `6f260b6bcce59ee85db823d6594c48bbe55a241c`.

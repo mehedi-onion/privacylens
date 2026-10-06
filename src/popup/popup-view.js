@@ -1,10 +1,6 @@
 import { advisePermissions, combineStatuses } from '../permissions/permission-advisor.js';
 
-const summaries = {
-  Normal: 'No review signals from these limited checks. This is not a guarantee of safety.',
-  Review: 'Review local findings, site permissions, navigation and any requested reputation evidence before sharing sensitive information. A warning does not mean this site is malicious.',
-  'High Attention': 'Several signals deserve close review. Check the URL findings and any requested reputation evidence before sharing private information.'
-};
+import { statusCopy, normalCaveat, setEvidenceState } from '../ui/status-copy.js';
 
 function appendExplanation(document, details, label, value) {
   const paragraph = document.createElement('p');
@@ -23,7 +19,7 @@ export function renderResult(document, result, advice = advisePermissions(), nav
   status.dataset.status = combinedStatus;
   status.hidden = false;
   document.getElementById('summary').textContent = result.available
-    ? summaries[combinedStatus] : 'No website assessment was made. Open an HTTP or HTTPS website to use PrivacyLens.';
+    ? `${statusCopy[combinedStatus]}${combinedStatus === 'Normal' ? ` ${normalCaveat}` : ''}` : 'No website assessment was made. Open an HTTP or HTTPS website to use PrivacyLens.';
   const container = document.getElementById('findings');
   container.replaceChildren();
   for (const finding of result.findings) {
@@ -35,22 +31,23 @@ export function renderResult(document, result, advice = advisePermissions(), nav
     symbol.textContent = finding.level === 'review' ? '⚠' : finding.id === 'https' ? '✓' : 'ⓘ';
     summary.append(symbol, document.createTextNode(finding.title));
     details.append(summary);
-    for (const [label, value] of [['Detected', finding.detected], ['Why it matters', finding.why], ['Suggestion', finding.suggestion]]) {
+    for (const [label, value] of [['What was noticed', finding.detected], ['Why this matters', finding.why], ['Consider', finding.suggestion]]) {
       appendExplanation(document, details, label, value);
     }
     container.append(details);
   }
   document.getElementById('permissions-context').textContent =
-    'Browser-reported settings for this top-level site, not evidence of feature use. Default and site-specific choices cannot be distinguished. PrivacyLens only reads these settings.';
+    'These are Chrome’s settings, not evidence of actual use. Default and site-specific choices may look the same.';
   const notes = document.getElementById('permission-notes');
   notes.replaceChildren();
   for (const note of advice.notes) {
-    const paragraph = document.createElement('p');
-    paragraph.className = 'permission-note';
-    const heading = document.createElement('strong');
-    heading.textContent = note.title;
-    paragraph.append(heading, document.createTextNode(`${note.detected} ${note.why} ${note.suggestion}`));
-    notes.append(paragraph);
+    const details = document.createElement('details');
+    details.className = 'permission-note';
+    const summary = document.createElement('summary'); summary.textContent = `⚠ ${note.title}`; details.append(summary);
+    for (const [label, text] of [['What was noticed', note.detected], ['Why this matters', note.why], ['Consider', note.suggestion]]) {
+      appendExplanation(document, details, label, text);
+    }
+    notes.append(details);
   }
   const permissionContainer = document.getElementById('site-permissions');
   permissionContainer.replaceChildren();
@@ -69,11 +66,13 @@ export function renderResult(document, result, advice = advisePermissions(), nav
     for (const [heading, value] of [
       ['Browser setting', permission.stateExplanation], ['What it allows', permission.allows],
       ['Common legitimate uses', permission.legitimateUses], ['Review when', permission.reviewWhen],
-      ['Suggestion', permission.recommendation]
+      ['Consider', permission.recommendation]
     ]) {
       appendExplanation(document, details, heading, value);
     }
     permissionContainer.append(details);
   }
+  setEvidenceState(document, 'address', { available: result.available, status: result.status });
+  setEvidenceState(document, 'permissions', { available: advice.permissions.some(item => item.state !== 'unavailable'), status: advice.status });
   document.getElementById('result').setAttribute('aria-busy', 'false');
 }

@@ -39,7 +39,7 @@ test('popup queries only the current active tab and renders expandable explanati
   for (const details of findings.children) {
     assert.equal(details.tag, 'details');
     assert.equal(details.children[0].tag, 'summary');
-    assert.match(details.textContent, /Detected.*Why it matters.*Suggestion/);
+    assert.match(details.textContent, /What was noticed.*Why this matters.*Consider/);
     assert.doesNotMatch(details.textContent, /do-not-display/);
   }
   assert.equal(document.getElementById('result').attributes['aria-busy'], 'false');
@@ -85,7 +85,7 @@ test('popup shows six actual states, all explanations, and separate permission r
   ]);
   for (const row of rows) {
     assert.equal(row.tag, 'details');
-    assert.match(row.textContent, /Browser setting.*What it allows.*Common legitimate uses.*Review when.*Suggestion/);
+    assert.match(row.textContent, /Browser setting.*What it allows.*Common legitimate uses.*Review when.*Consider/);
   }
 });
 

@@ -1,3 +1,24 @@
+# Personal Chrome checks — Milestone 8
+
+Use current desktop Chrome/Chromium 102+. The synthetic preview verifies the actual view code, not unpacked permissions, real service-worker lifetimes, optional-host prompts or assistive technology integration. No real key or live reputation request was used by the developer. Use a fresh key only in settings; keep it out of screenshots/logs.
+
+1. Pull normally and reload at `chrome://extensions`. Confirm **0.8.0**. Compare permissions with 0.7.0: activeTab, contentSettings, management, scripting, downloads, webNavigation, storage; optional `https://www.virustotal.com/*`. There must be **no new permission or host prompt** from this upgrade.
+2. **A — Normal:** open a normal HTTPS website. Verify domain/status/one-sentence guidance appear first, including the no-guarantee caveat. Open Privacy of this scan: local checks have actual states; page scan is Not checked, missing navigation is Unavailable, external is None. No report or hostname is saved.
+3. **B/C — Review/High Attention:** use the offline synthetic tests for brand mismatch and a combined HTTP/sensitive-action example, without visiting deceptive sites. In Chrome, compare a harmless HTTP local fixture's informational findings. Do not weaken browser protection to manufacture a warning. Verify the three wording variants in `src/ui/status-copy.js` and expand findings: What was noticed, Why this matters, Consider. A weak signal must not become High Attention.
+4. **D — Site permissions:** change camera, microphone and location manually using Chrome site settings on a site you already trust. Reopen, verify real state changes and Review if all three are Allowed. Confirm no claim of use/misuse. Restore your preferred settings.
+5. **E — Page scan:** use the bundled safe fixture from the earlier page checklist. Click Scan this page explicitly. Check structural findings and separate Page scan status, then the privacy summary. No typed/password/card/email values may appear in UI/logs. Closing/reopening clears the scan.
+6. **F — Navigation:** use the direct and harmless same-site redirect fixture steps below. Verify actual qualifiers, no invented chain and no automatic escalation for a normal redirect. Switch/close tabs and verify context/cleanup.
+7. **G — Download:** use a normal PDF and safe synthetic executable-looking fixture from the earlier download checklist. Inspect Recent download and its separate status/source. No file read/open/delete/cancel controls may exist; the previous five-minute upper bound still applies.
+8. **H — External reputation (optional):** first verify no request on opening/cancelling. With a fresh eligible key, confirm one public hostname you consent to share. Privacy summary must name VirusTotal and authentication-key transmission. Invalid-key/no-report responses still disclose sharing; network interruption says it may have shared. Clear/cancel another check: prior disclosure must remain until popup closure. Reopen: result/disclosure gone, no automatic request. Follow the existing key/Forget/quota steps below; never expose the x-apikey header.
+9. **I — Extension audit:** inspect a simple and broad-access extension. Check enabled/disabled, independent labels, Chrome warnings and capabilities-not-behavior explanations. PrivacyLens is excluded; Audit PrivacyLens opens transparency rather than a fake score. No modifying controls exist.
+10. **J — Transparency:** open Audit PrivacyLens from popup, audit and settings. Compare all seven permissions and the one optional host with Chrome Details. Expand downloads/management/storage: verify broader Chrome capabilities and narrower implementation are explicit. Review all nine data-boundary rows, API-key transmission, temporary lifetimes and limitations.
+11. Use Tab/Shift+Tab, Enter and Space throughout. Verify focus stays visible in light/dark appearance, native summaries expand, buttons/inputs have meaningful names, headings/read order work with your screen reader, statuses have words/symbols without color, and the data table can scroll with keyboard. Check normal laptop popup height/scrolling and narrow page widths.
+12. Inspect extension/popup/worker errors, Network and Storage. No unexpected outgoing requests or result/history database; only confirmed VT domain GETs, optional key slots and four anonymous session quota numbers. No secret values or typed form content in logs. Verify all local features still work without a key.
+
+The following M7 checklist remains relevant for live optional-host, key, quota and real-account behavior. Its initial version/upgrade instruction is historical; use **0.8.0**, with no new privileges.
+
+---
+
 # Personal Chrome checks — Milestone 7
 
 Use current desktop Chrome/Chromium **102+**. Offline mocks and the preview cannot prove the real optional-host prompt, key/session lifetime or VirusTotal account behavior. Use a **fresh** key entered only in PrivacyLens settings, never in source, chat, screenshots, logs or Git. No developer live requests were made.
@@ -19,7 +40,7 @@ Use current desktop Chrome/Chromium **102+**. Offline mocks and the preview cann
 
 ## Earlier feature checklists
 
-The following checklists are historical references. For current regression testing use version **0.7.0**, Chrome **102+**, and the current manifest above. Their older zero-storage/network assertions now mean **no feature data storage or automatic requests**, with only the optional key, anonymous session counters and explicitly confirmed VirusTotal GET allowed. No local feature gained outbound requests.
+The following checklists are historical references. For current regression testing use version **0.8.0**, Chrome **102+**, and the current manifest above. Their older zero-storage/network assertions now mean **no feature data storage or automatic requests**, with only the optional key, anonymous session counters and explicitly confirmed VirusTotal GET allowed. No local feature gained outbound requests.
 
 ---
 

@@ -1,8 +1,10 @@
+import { setEvidenceState } from '../ui/status-copy.js';
 export function clearDownloadCheck(document) {
   document.getElementById('download-check').replaceChildren();
 }
 
 export function renderDownloadCheck(document, result) {
+  setEvidenceState(document, 'download', { available: result?.available, checked: result === null || result?.available === true, status: result?.check?.status });
   const container = document.getElementById('download-check');
   container.replaceChildren();
   const paragraph = (text, parent = container, className) => {
@@ -35,7 +37,7 @@ export function renderDownloadCheck(document, result) {
     const heading = document.createElement('strong');
     heading.textContent = `${finding.level === 'review' ? '⚠' : 'ⓘ'} ${finding.title}`;
     const explanation = paragraph('', details);
-    explanation.append(heading, document.createTextNode(`Detected: ${finding.detected}. ${finding.why} Suggestion: ${finding.suggestion}`));
+    explanation.append(heading, document.createTextNode(`What was noticed: ${finding.detected}. Why this matters: ${finding.why} Consider: ${finding.suggestion}`));
   }
   container.append(details);
 }

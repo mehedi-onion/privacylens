@@ -375,7 +375,7 @@ function view() {
 test('navigation view has expandable text-only guidance, no chain, technical IDs or history list', () => {
   const document = view(); renderNavigation(document, advice(['client_redirect', 'server_redirect']));
   const output = document.getElementById('navigation-findings').textContent;
-  assert.match(output, /Normal.*Server redirect.*Detected.*Why it matters.*Suggestion.*Client redirect/);
+  assert.match(output, /Normal.*Server redirect.*What was noticed.*Why this matters.*Consider.*Client redirect/);
   assert.doesNotMatch(output, /documentId|tabId|redirect chain:|navigation history list/);
   clearNavigation(document); assert.equal(document.getElementById('navigation-findings').textContent, '');
   renderNavigation(document, adviseNavigation(null));

@@ -64,8 +64,9 @@ export function renderAudit(document, inventory, shown) {
     if (item.description) details.append(paragraph(document, item.description, 'metadata'));
     details.append(paragraph(document, `Type: ${item.type === 'login_screen_extension' ? 'Login-screen extension' : 'Extension'}${item.version ? ` · Version: ${item.version}` : ''}${item.installType ? ` · Install type: ${item.installType}` : ''}`, 'metadata'));
     details.append(paragraph(document, item.stateExplanation));
-    section(document, details, 'Why this label', item.reasons.length ? item.reasons : ['No review rule matched these limited capability checks. Normal is not a guarantee of safety.']);
-    details.append(paragraph(document, item.recommendation));
+    section(document, details, 'What was noticed', item.reasons.length ? item.reasons : ['No review rule matched these limited capability checks. Normal is not a guarantee of safety.']);
+    details.append(paragraph(document, 'Why this matters: These are listed capabilities, not proof of behavior. Review whether they match the features you use.'));
+    details.append(paragraph(document, `Consider: ${item.recommendation}`));
     const permissionsHeading = document.createElement('h2');
     permissionsHeading.textContent = 'API permissions reported by Chrome';
     details.append(permissionsHeading);
@@ -74,7 +75,7 @@ export function renderAudit(document, inventory, shown) {
       const row = document.createElement('li');
       const name = document.createElement('strong');
       name.textContent = permission.name;
-      row.append(name, paragraph(document, permission.what), paragraph(document, `Common uses: ${permission.uses}`), paragraph(document, `Suggestion: ${permission.recommendation}`));
+      row.append(name, paragraph(document, permission.what), paragraph(document, `Common uses: ${permission.uses}`), paragraph(document, `Consider: ${permission.recommendation}`));
       permissionList.append(row);
     }
     details.append(permissionList);

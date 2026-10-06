@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PrivacyLens",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "minimum_chrome_version": "102",
   "description": "Local privacy checks for websites, extensions and downloads, with optional VirusTotal lookup. No browsing history saved.",
   "permissions": ["activeTab", "contentSettings", "management", "scripting", "downloads", "webNavigation", "storage"],

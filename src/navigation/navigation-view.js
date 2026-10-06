@@ -1,5 +1,7 @@
+import { setEvidenceState } from '../ui/status-copy.js';
 export function clearNavigation(document) { document.getElementById('navigation-findings').replaceChildren(); }
 export function renderNavigation(document, advice) {
+  setEvidenceState(document, 'navigation', advice);
   const container = document.getElementById('navigation-findings');
   container.replaceChildren();
   if (advice.available) {
@@ -18,7 +20,7 @@ export function renderNavigation(document, advice) {
     const summary = document.createElement('summary');
     summary.textContent = `${finding.level === 'review' ? '⚠' : 'ⓘ'} ${finding.title}`;
     details.append(summary);
-    for (const [label, value] of [['Detected', finding.detected], ['Why it matters', finding.why], ['Suggestion', finding.suggestion]]) {
+    for (const [label, value] of [['What was noticed', finding.detected], ['Why this matters', finding.why], ['Consider', finding.suggestion]]) {
       const paragraph = document.createElement('p');
       const heading = document.createElement('strong');
       heading.textContent = label;

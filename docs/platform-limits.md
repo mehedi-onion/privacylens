@@ -1,3 +1,13 @@
+# Milestone 8 presentation boundary
+
+Milestone 8 adds no platform API, permission, host grant or detector. All seven required permissions and the one optional VirusTotal host are unchanged from 0.7.0. Chrome 102 remains the minimum. The new transparency view reads bundled metadata only.
+
+The popup reads existing key-configuration metadata locally to explain session/remembered/unknown state, never the raw key. Reputation replies now include a small transmission-state enum, so an HTTP error can disclose that a request was sent; uncertain network/cancellation cases remain explicitly uncertain. This does not add a request, endpoint or storage field. Existing quotas, consent, adapter and read-only Chrome boundaries are unchanged. Page/download labels remain independent of the current-site overview.
+
+Earlier official API verification and limitations follow.
+
+---
+
 # Milestone 7 platform check
 
 Verified **before implementation**, October 7, 2026, against official VirusTotal v3 and Chrome documentation. Baseline: `6f260b6bcce59ee85db823d6594c48bbe55a241c`.

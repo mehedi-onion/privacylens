@@ -406,14 +406,14 @@ class Element {
 }
 function view() {
   const container = new Element();
-  return { getElementById: id => { assert.equal(id, 'download-check'); return container; }, createElement: tag => new Element(tag),
+  return { getElementById: id => { assert.ok(['download-check', 'download-state'].includes(id)); return id === 'download-check' ? container : null; }, createElement: tag => new Element(tag),
     createTextNode: text => { const element = new Element(); element.textContent = text; return element; } };
 }
 test('download view renders text explanations and no file-control or history UI', () => {
   const document = view();
   renderDownloadCheck(document, { ...reply(), check: check({ filename: '<script>.pdf.exe', danger: 'uncommon' }) });
   const output = document.getElementById('download-check').textContent;
-  assert.match(output, /<script>\.pdf\.exe.*Review.*Source.*Details and guidance.*Chrome.*Suggestion/);
+  assert.match(output, /<script>\.pdf\.exe.*Review.*Source.*Details and guidance.*Chrome.*Consider/);
   assert.doesNotMatch(output, /Cancel download|Delete file|Open file|download history list/);
   clearDownloadCheck(document);
   assert.equal(document.getElementById('download-check').textContent, '');

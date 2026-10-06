@@ -46,3 +46,20 @@ a { color: inherit; }
 
 .audit-link { display: block; margin-top: 16px; padding: 8px 10px; border: 1px solid #769080; border-radius: 4px; color: inherit; text-align: center; text-decoration: none; font-weight: 600; }
 .audit-link:focus-visible { outline: 2px solid #466e58; outline-offset: 3px; }
+
+.evidence-section { padding: 11px 0; }
+.evidence-section > summary { list-style-position: outside; margin-left: 16px; }
+.evidence-section > summary h2 { display: inline; font-size: 14px; font-weight: 650; }
+.source-label { float: right; font-size: 10px; font-weight: 600; letter-spacing: .03em; color: #57665e; }
+.section-state { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: #57665e; }
+.evidence-section[open] > summary { margin-bottom: 12px; }
+.privacy-summary { margin: 14px 0 10px; padding: 10px; border: 1px solid #769080; border-radius: 4px; }
+.privacy-summary summary { font-size: 13px; }
+#privacy-overview { display: block; margin: 3px 0 0 16px; font-size: 11px; font-weight: 400; }
+.privacy-summary h3 { font-size: 12px; margin-bottom: 4px; }
+.privacy-summary ul, #privacy-external { padding-left: 16px; font-size: 12px; margin-top: 4px; }
+.transparency-link { display: block; text-align: center; margin-top: 10px; font-size: 12px; }
+:focus-visible { outline: 2px solid #466e58; outline-offset: 3px; }
+@media (prefers-color-scheme: dark) { .source-label, .section-state { color: #bdcbbf; } }
+
+@media (prefers-color-scheme: dark) { :focus-visible, summary:focus-visible, button:focus-visible, .audit-link:focus-visible { outline-color: #b3d1bb; } }

@@ -27,7 +27,12 @@ export function renderReputation(document, report, advice) {
     const count = document.createElement('dd'); count.textContent = String(report.timeout); list.append(term, count);
   }
   container.append(list);
-  for (const text of [advice.explanation, advice.caveat, 'Closing this popup discards this reputation result.']) {
+  for (const [label, text] of [['What was noticed', `VirusTotal vendors returned ${report.counts.malicious} malicious and ${report.counts.suspicious} suspicious verdicts for this hostname.`],
+    ['Why this matters', advice.explanation], ['Consider', 'Compare the source with an independent official address and keep reviewing any local findings. Vendor results are only one source of evidence.']]) {
+    const paragraph = document.createElement('p'); const title = document.createElement('strong'); title.textContent = `${label}: `;
+    paragraph.append(title, document.createTextNode(text)); container.append(paragraph);
+  }
+  for (const text of [advice.caveat, 'Closing this popup discards this reputation result.']) {
     const paragraph = document.createElement('p'); paragraph.className = 'permission-context'; paragraph.textContent = text; container.append(paragraph);
   }
 }

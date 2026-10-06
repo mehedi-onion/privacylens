@@ -266,7 +266,7 @@ test('controller does nothing before explicit scan and renders only text explana
   await controller.scan();
   assert.equal(calls.length, 1);
   assert.equal(doc.getElementById('page-scan-status').textContent, 'Review');
-  assert.match(doc.getElementById('page-scan-findings').textContent, /Detected.*Why it matters.*Suggestion/);
+  assert.match(doc.getElementById('page-scan-findings').textContent, /What was noticed.*Why this matters.*Consider/);
   assert.equal(doc.getElementById('scan-page').disabled, false);
 });
 test('repeated scans replace results and clearing removes the snapshot', async () => {

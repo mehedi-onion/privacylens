@@ -2,7 +2,9 @@
 
 **Understand what websites and browser extensions can access before you trust them.**
 
-PrivacyLens is an early privacy-oriented browser extension prototype. **Milestone 7** analyzes the current URL locally, reads current-site content settings where Chrome allows it, audits installed-extension permissions, scans current-page structure only when you ask, explains the latest temporarily observed download event, and shows Chrome-reported redirect/navigation qualifiers for the current tab. These checks are local. An optional, separately confirmed VirusTotal lookup adds external domain-reputation evidence. It does not maintain browsing/navigation history, save an extension inventory, store page scans, or keep a download history.
+PrivacyLens is a privacy-focused browser extension that explains what a website or browser extension can access and highlights signals worth reviewing. Most checks happen locally, and PrivacyLens does not keep browsing history.
+
+This early prototype explains the current address, site permissions, installed-extension capabilities, page structure after a click, recent temporary download metadata and Chrome-reported navigation. An optional VirusTotal domain lookup sends a hostname and your authentication key only after confirmation. It works without VirusTotal. **Milestone 8** makes these boundaries and explanations easier to understand; it adds no detection subsystem or privileges.
 
 **See → Understand → Decide → Forget.**
 
@@ -15,10 +17,10 @@ It analyzes signals, not intent. A warning means **“review this”**, not **�
 3. Enable **Developer mode**, click **Load unpacked**, and select this `privacylens` folder containing `manifest.json`.
 4. Pin PrivacyLens from the browser's extensions menu.
 5. Open an HTTP/HTTPS website and click the PrivacyLens toolbar icon.
-6. Expand a URL finding or site-permission row to read its explanation.
+6. Expand **Website address** or **Site permissions**, then a finding to read what was noticed, why it matters and what to consider.
 7. Click **Review browser extensions** to open the separate extension audit. Expand an extension for its permissions, explanations, and Chrome warnings. Search by name or filter by review label locally.
 8. Click **Scan this page** to inspect the current top-level page’s structural metadata. Expand a finding for its reason and suggestion. Closing the popup discards this page scan.
-9. After downloading a file, open the popup promptly and inspect **Recent download check**. Use **Check recent download** for a fresh read of the current temporary record.
+9. After downloading a file, open the popup promptly and inspect **Recent download**. Use **Check recent download** for a fresh read of the current temporary record.
 10. After navigating in the focused active tab, open the popup promptly and inspect **Navigation**. Expand a reported qualifier for its explanation. Missing data is explicitly unavailable.
 11. Optional: open **VirusTotal settings**, enter your own fresh key, and save without Remember for session-only use. Then click **Check reputation with VirusTotal**, read the hostname disclosure, and confirm only if you want to share it.
 
@@ -26,7 +28,7 @@ No installation command, build step, packages, or account are required for local
 
 ## What it shows
 
-The popup displays the domain, connection scheme, overall status, **URL findings**, and a separate **Site permissions** section. URL analysis uses deterministic rules and small bundled brand/shortener lists. The permission reader uses `chrome.contentSettings.<type>.get()` for the current site's origin.
+The popup starts with the domain, connection scheme, overall status and one sentence of guidance. Separate expandable sections show **Website address**, **Site permissions**, **Page scan**, **Navigation**, **Recent download** and **VirusTotal (optional)**, with a short state and LOCAL or EXTERNAL label. URL analysis uses deterministic rules and small bundled brand/shortener lists. The permission reader uses `chrome.contentSettings.<type>.get()` for the current site's origin.
 
 | Site setting | States the API can report |
 | --- | --- |
@@ -46,6 +48,22 @@ Each row explains what the feature allows, common legitimate uses, when to revie
 Camera alone, notifications alone, and even camera plus microphone do not automatically escalate the status. When all three sensitive settings are Allowed, the popup asks whether you still need them. It makes no inference about intent.
 
 There are no percentage scores. HTTPS does not prove trustworthiness; HTTP alone does not imply malware. Words like `login` or `payment` are informational by themselves. See [URL rules](docs/rules.md) and [platform limits](docs/platform-limits.md).
+
+## Trust and transparency
+
+**Privacy of this scan** shows which local checks ran, which were not checked or unavailable, and whether this popup sent a confirmed VirusTotal request. It also distinguishes no saved browsing history/results from an optional session or remembered key and anonymous session quota counters. A failed or cancelled request may already have shared the hostname and authentication key; clearing its report does not erase that disclosure while this popup stays open.
+
+The overall website label combines address, site-setting, navigation and explicitly requested reputation evidence. Page scans and downloads retain separate labels; a recent download may belong to a different site. Extension auditing stays in its dedicated view. Unavailable means the check could not supply evidence, not that it found no concerns. No risk thresholds changed in Milestone 8.
+
+| Overall label | Plain-language guidance |
+| --- | --- |
+| Normal | No current signal from these checks needs your attention. This does not guarantee that a website is safe. |
+| Review | PrivacyLens found something worth checking before you share sensitive information or grant access. |
+| High Attention | Several strong privacy or security signals deserve careful review. |
+
+Open **Audit PrivacyLens · transparency** from the popup, extension audit or settings. The [transparency page](src/transparency/transparency.html) explains every permission, the difference between Chrome's technical powers and PrivacyLens's actual read-only use, [data boundaries](docs/privacy.md), and what these checks cannot know. It gives instructions for comparing PrivacyLens with Chrome's own extension details, without awarding itself a trust score. Every review explanation distinguishes what was noticed, why it might matter and what you can consider doing.
+
+Native expandable controls work with keyboard Enter/Space; visible focus, useful headings, text labels and status symbols supplement color. The table has labeled row/column headings and a keyboard-focusable scroll region. No new permission, host, storage field, request endpoint, framework or collection was added. See the [Milestone 8 security audit](docs/security-audit-m8.md) and [personal Chrome checklist](docs/manual-testing.md).
 
 ## Extension privacy audit
 
@@ -188,7 +206,7 @@ Use Node.js 22 or newer from this folder:
 node --test
 ```
 
-If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, download danger/filename/source rules, incognito filtering, event-only ID lookups, expiry, worker recreation, navigation qualifiers/document matching/tab cleanup, local messaging, and source privacy guardrails. Reputation tests mock every request and cover opt-in confirmation, key modes/removal, quota state, sanitization, errors, response whitelisting, conservative integration and closing races.
+If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, download danger/filename/source rules, incognito filtering, event-only ID lookups, expiry, worker recreation, navigation qualifiers/document matching/tab cleanup, local messaging, and source privacy guardrails. Reputation tests mock every request and cover opt-in confirmation, key modes/removal, quota state, sanitization, errors, response whitelisting, conservative integration and closing races. Transparency tests cover exact guidance, data boundaries, manifest completeness, native accessible controls, text/source labels, contrast, honest transmission disclosure after errors and absence of new collection/endpoints.
 
 ## Files to learn
 
@@ -198,6 +216,9 @@ src/popup/popup.html                       Popup layout
 src/popup/popup.css                        Calm styling
 src/popup/popup.js                         Current-tab adapter and scan lifecycle
 src/popup/popup-view.js                    Text-only rendering
+src/ui/status-copy.js                     Shared status wording and evidence states
+src/ui/privacy-summary.js                 In-memory local/external disclosure
+src/transparency/                         Permission catalog, data table and limitations
 src/analysis/url-analyzer.js               Local URL parsing and checks
 src/analysis/brand-rules.js                Brand tokens/domain boundaries
 src/analysis/risk-model.js                 URL label rules
@@ -257,6 +278,6 @@ Chrome API access stays separate from explanation and analysis logic. The backgr
 
 ## Scope and limitations
 
-Milestone 7 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirect chains, file contents, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, URL submissions, file reputation/upload, fuzzy matching, or offensive security features.
+Milestone 8 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirect chains, file contents, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, URL submissions, file reputation/upload, fuzzy matching, or offensive security features.
 
 The URL reference lists remain deliberately small. Permission settings are top-level-site snapshots; inherited defaults, one-time grants, OS rules, embedded frames, and Chromium derivatives can limit what the API tells us. Missing data is shown honestly as Unavailable. See [platform limits](docs/platform-limits.md) and [manual testing](docs/manual-testing.md).

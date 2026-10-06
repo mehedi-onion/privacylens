@@ -42,7 +42,10 @@ test('shipped source isolates opt-in networking and key storage; other privacy g
   const secret = /-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:sk-[a-zA-Z0-9_-]{16,}|gh[pousr]_[a-zA-Z0-9]{16,}|github_pat_[a-zA-Z0-9_]{16,})|\b(?:api[_-]?key|client[_-]?secret)\s*[:=]|\b[a-f0-9]{64}\b/i;
   for (const file of files) {
     const source = await readFile(file, 'utf8');
-    assert.doesNotMatch(source, forbidden, file.pathname);
+    // A negative product statement is text, not an analytics dependency.
+    const executable = file.pathname.endsWith('/transparency/transparency.html')
+      ? source.replace('No account, analytics, remote logging, cloud sync or scan-history database.', '') : source;
+    assert.doesNotMatch(executable, forbidden, file.pathname);
     const name = file.pathname.slice(root.pathname.length);
     if (name !== 'src/reputation/virustotal-client.js') assert.doesNotMatch(source, /\bfetch\b/, name);
     if (!['src/reputation/key-store.js', 'src/reputation/reputation-worker.js'].includes(name)) {
