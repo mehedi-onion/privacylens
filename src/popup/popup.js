@@ -2,6 +2,7 @@ import { analyzeUrl } from '../analysis/url-analyzer.js';
 import { renderResult } from './popup-view.js';
 import { readSitePermissions } from '../permissions/site-permission-reader.js';
 import { advisePermissions } from '../permissions/permission-advisor.js';
+import { createPageScanController } from '../page/page-controller.js';
 
 export async function scanCurrentTab(chromeApi, document, { signal } = {}) {
   let tab;
@@ -29,9 +30,12 @@ export function clearPopup(document) {
 // Browser globals stay here; the analyzer can also run in offline Node tests.
 if (typeof chrome !== 'undefined' && typeof document !== 'undefined') {
   const lifecycle = new AbortController();
+  const pageScan = createPageScanController(chrome, document, { signal: lifecycle.signal });
+  document.getElementById('scan-page').addEventListener('click', () => void pageScan.scan());
   void scanCurrentTab(chrome, document, { signal: lifecycle.signal });
   window.addEventListener('pagehide', () => {
     lifecycle.abort();
+    pageScan.clear();
     clearPopup(document);
   }, { once: true });
 }

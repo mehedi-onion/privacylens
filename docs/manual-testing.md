@@ -1,3 +1,22 @@
+# Personal Chrome checks — Milestone 4
+
+These checks verify the real toolbar access grant and injection, which offline mocks and a layout preview cannot prove. Use desktop Chrome/Chromium 92+; prefer a current release.
+
+1. Pull `origin/main` normally if using another checkout. Open `chrome://extensions`, reload PrivacyLens, and confirm **0.4.0**. Accept the added **scripting** permission if Chrome prompts. The manifest must contain only activeTab, contentSettings, management, scripting, without broad host grants.
+2. Visit `https://example.com` and open PrivacyLens. Before clicking, **Page scan** must say **No page scan yet**. Click **Scan this page**. Expect a fresh local snapshot; ordinary links/forms alone should not create an accusation. Expand a finding and check Detected, Why it matters, and Suggestion.
+3. Visit a login page you already trust, such as `https://accounts.google.com`, without entering credentials. Scan it. A recognized password field/same-origin login action alone must stay informational, not High Attention. Custom controls or cross-origin providers may produce different structural findings; compare the explanation with the page.
+4. Scan a familiar page with external links. Compare a few visible domain labels and destinations manually. A shortener or mismatched label should explain review, not claim phishing. Results must state that this is a snapshot and must not show destination query strings or credentials.
+5. From the repository folder, serve the bundled fixture locally with `python3 -m http.server 8767 --bind 127.0.0.1`. Open `http://127.0.0.1:8767/docs/fixtures/page-scan.html` in a regular tab. Do not open it as a file URL. This development server is only for the test page and is not part of PrivacyLens.
+6. Scan that fixture. Expect **Review**: two sensitive forms point to `receiver.example.invalid`, one password form stays here, the visible `paypal.com` link points to a different hostname, and shortener/IP/punycode links receive explanations. Do not click test links. The fixture blocks form submission. The inline iframe must be counted without reading its contents. HTTPS-to-HTTP combinations and cross-origin frame counts also have offline tests; this HTTP fixture does not exercise every rule.
+7. Enter only a made-up marker, such as `TEST-ONLY-DO-NOT-USE-A-REAL-PASSWORD`, into the fixture fields, then scan again. No marker or typed email/card/password/textarea content may appear in the popup or its console. Never use actual private data for this test. Link labels inside forms are deliberately skipped. Inspect the page if desired: the scan must not change its fields or submit anything.
+8. Close the popup and reopen it. Old page findings must be gone, with **No page scan yet** until another click. Scan again, close during a scan if possible, and reopen: no late result or history/timeline should appear. The separate extension-audit view must still work.
+9. Try **Scan this page** on `chrome://extensions` and a browser-protected page such as the Chrome Web Store. Expect Unavailable, without a fabricated result or private error text. Return to an ordinary page, reopen, and scan normally.
+10. Check `chrome://extensions` for errors. In popup DevTools, inspect Network and Application/Storage while scanning. Only bundled extension resources should load; there must be no outgoing HTTP(S) requests or saved scan records. In the fixture tab's DevTools Network panel, clear existing requests before clicking Scan and confirm no request is caused by PrivacyLens. Ordinary websites can independently make requests; distinguish these from extension activity.
+11. Check keyboard access, expanded explanations, light/dark mode, and scrolling. URL findings, Page scan, and Site permissions must remain visibly separate. Confirm there are no submission, blocking, disable/uninstall, tracking, or scan-history controls.
+12. Stop the temporary local test server with Ctrl+C when finished. Do not install extra extensions or change site settings solely for this milestone. Earlier milestone checks below remain useful for regression testing.
+
+---
+
 # Personal Chrome checks — Milestone 3
 
 These real Chrome checks remain necessary; offline mocks and a layout preview cannot verify your installed extensions or Chrome's permission prompt. No third-party extension needs to be installed just for testing.

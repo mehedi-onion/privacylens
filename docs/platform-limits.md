@@ -1,3 +1,36 @@
+# Milestone 4 platform check
+
+Checked before implementation on October 7, 2026 against official Chrome documentation for [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [scripting](https://developer.chrome.com/docs/extensions/reference/api/scripting), and [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts).
+
+## Minimum access and user action
+
+The only new manifest permission is `scripting`. Existing `activeTab` supplies temporary access after the user opens the toolbar popup. The explicit **Scan this page** button then calls `chrome.scripting.executeScript()` once. No broad/persistent host permissions, declared content scripts, background worker, dynamic script registrations, events, polling, or monitoring are added. URL/site-setting reads on popup opening do not inject this function.
+
+`executeScript()` defaults to the top frame and isolated world. PrivacyLens supplies only `target: { tabId }`, the bundled collector `func`, and a brand-name `args` list. It does not set `allFrames`, choose the page's MAIN world, change styles, or inspect embedded documents. Isolation separates extension JavaScript variables from page variables, but both worlds share the DOM. Read-only behavior and avoiding field values are implementation boundaries: `scripting` itself can execute code that changes pages.
+
+The management and content-settings permissions remain unchanged and read-only in this implementation. Exact manifest permissions are `activeTab`, `contentSettings`, `management`, `scripting`.
+
+## Version and browser limits
+
+- The scripting API starts with Chrome 88 / MV3; Promise-based `executeScript()` starts with Chrome 90. The `func` and `args` fields used here start with Chrome 92. The project's minimum is therefore raised to **Chrome 92**. It does not specify a `world` option requiring a later version.
+- Desktop Chromium derivatives can restrict APIs differently. Firefox and mobile support are not promised.
+- Browser pages, Chrome Web Store pages, and other protected documents can prevent injection. PrivacyLens also deliberately rejects file and non-HTTP(S) URLs. Failures show Unavailable without logging raw browser errors or inventing a result.
+- Temporary access can be lost on navigation. The reader verifies the returned top-frame origin matches the queried tab origin and ignores results after popup closure. An injection already sent to Chrome cannot be cancelled; it still performs only a one-time bounded read. Same-origin navigation or DOM changes can make any snapshot stale.
+
+## Structural scope and privacy limits
+
+The function reads types/autocomplete tokens, action/method attributes, submit-button action overrides, eligible visible link labels and hrefs, iframe src attributes, and resource src/href attributes. It never reads `.value`, default values, textarea contents, form contents, page HTML, frame documents, or page JavaScript variables. Links inside forms/editable areas or containing controls have their labels skipped. Link text is reduced locally to domain/known-brand labels; raw text is not returned. Sanitized origins, recognized domain/brand labels, Boolean structural flags, and aggregate counts pass back to extension code; credentials, paths, queries, and fragments are dropped. The analyzer returns grouped explanation text, not the original metadata arrays.
+
+The scanner does not submit forms, crawl links, fetch destinations, resolve redirects, inspect TLS, observe downloads, or infer where scripts send data. It cannot cover shadow DOM, embedded-frame forms, unrecognized custom controls, or changes after the scan. Relative URLs resolve using the document base; empty form actions use the current page. Different origin means a different scheme, hostname, or port. Host comparisons do not group registrable domains with a public-suffix database.
+
+Iframes are counted using source attributes, not current frame contents or sandbox-origin information. External-hostname counts include DOM references from links/resources/iframe sources, not proof of network requests, distinct organizations, or trackers. Password/payment metadata and iframe/reference counts are informational alone.
+
+Collection limits: 50 forms, 100 controls per form, 400 inputs, 400 links, 200 destination/label patterns, 100 frames, 400 resource references, 100 external hostnames. This bounds processing of selected DOM elements; selectors themselves still operate on the document. A cap note identifies partial results. Link deduplication uses sanitized origin plus recognized label metadata, so different paths at one origin are not retained.
+
+Scan results live only in popup memory/rendered text, are replaced by another explicit scan, and are cleared on pagehide. No storage, cookies, history, telemetry, or outgoing requests are introduced. Chrome/page activity remains separate from this extension.
+
+---
+
 # Milestone 3 platform check
 
 Checked October 7, 2026 before coding against the [Manifest V3 management reference](https://developer.chrome.com/docs/extensions/reference/api/management).

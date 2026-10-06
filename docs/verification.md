@@ -1,3 +1,29 @@
+# Milestone 4 verification
+
+Verified October 7, 2026 against published Milestone 3 commit `c9e9a553998176a1b3781c7a3fdb7e8b1e04cc2c`.
+
+## Automated and privacy checks
+
+- `node --test`: **106 passed, 0 failed**. All 73 baseline checks remain, with the manifest assertion updated for scripting/Chrome 92. The 33 page-scan tests cover normal/sensitive forms, relative/empty/override actions, cross-origin destinations, matching/misleading labels, local brand/shortener/IP/punycode rules, ignored schemes, iframe/reference counts, grouping/caps, malformed snapshots, isolated function serialization, explicit-click lifecycle, stale/closed reads, and mocked injection errors.
+- Value-access traps in DOM fixtures reject input/default-value reads, field-value attributes, textarea/form text serialization, page HTML, and frame document access. Synthetic password/email/card/text markers do not appear in collector output or findings. Form/editable/control-containing link labels are skipped. A static collector guard also forbids value reads, submissions, mutations, networking, and observers.
+- Exact permissions are activeTab, contentSettings, management, scripting. Minimum Chrome 92 matches documented `func`/`args` support. There are no persistent host grants, background workers, registered content scripts, external dependencies, or storage permissions.
+- The adapter calls only `scripting.executeScript()` once after the explicit button click, targeting the current top frame. Mock proxies reject other scripting methods. It checks origin/frame and ignores late results after closure. Existing management/content-settings read-only guards continue passing.
+- Source/data inspection and static tests detect no outgoing request APIs, persistence, cookies, history use, telemetry libraries, unsafe HTML rendering, logging, or management mutations. The extension-page CSP still blocks connections. Destinations are sanitized to origins; raw labels, URL paths/queries/credentials, and form values are not returned or stored.
+- Syntax checks cover all JavaScript and JSON. HTML script/style targets resolve locally and Git whitespace checks pass. A separate publication scan checks tracked/new files for VirusTotal-style keys, tokens, real passwords, private keys, and local credentials; synthetic test strings are reviewed explicitly.
+- Password/payment fields alone remain Normal. Cross-origin sensitive forms or misleading links produce Review. High Attention requires a sensitive form to an external HTTP origin on HTTPS plus a misleading link to that same brand-like unrelated destination. Labels indicate signals, never proven misuse.
+
+## Browser checks
+
+The actual popup files were previewed on loopback with a temporary Chrome API mock outside the repository and the manifest’s strict CSP. Verified no scan before the button click, separate URL/page labels, expandable plain-language details, and cleared results after reload. The real collector also ran on the bundled fixture in an in-app browser DOM: it recognized forms/links/frame attributes and returned no made-up typed field or textarea contents. No external test links were followed or forms submitted. Preview tabs/server were closed. This is not a test of actual Chrome extension injection.
+
+Real unpacked loading, Chrome's permission prompt, temporary toolbar access, protected-page restrictions, and your browser's Network/Storage panels still require [the manual checklist](manual-testing.md). The bundled fixture blocks submissions and has no outgoing request code. It must be served on loopback for an ordinary HTTP tab.
+
+## Git scope
+
+Milestone 4 is a separate commit after `c9e9a5` with message `feat: add local on-demand page privacy scan`. Publication uses a normal push to origin/main, with no force push. No later-milestone work is included.
+
+---
+
 # Milestone 3 verification
 
 Verified October 7, 2026 against the published Milestone 2 baseline `c405842`.

@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "PrivacyLens",
-  "version": "0.3.0",
-  "minimum_chrome_version": "88",
-  "description": "Understand URL signals, site settings, and extension permissions locally. No history saved.",
-  "permissions": ["activeTab", "contentSettings", "management"],
+  "version": "0.4.0",
+  "minimum_chrome_version": "92",
+  "description": "Understand URL signals, site settings, extension permissions, and page structure locally. No history saved.",
+  "permissions": ["activeTab", "contentSettings", "management", "scripting"],
   "action": {
     "default_title": "PrivacyLens — review this address",
     "default_popup": "src/popup/popup.html"

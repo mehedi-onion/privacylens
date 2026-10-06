@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PrivacyLens structural test page</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; max-width: 720px; margin: 32px auto; padding: 0 16px; }
+    form, section { border-top: 1px solid #bbb; margin-top: 24px; padding-top: 16px; }
+    label { display: block; margin: 12px 0; }
+    input, textarea { display: block; font: inherit; }
+    li { margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <h1>PrivacyLens structural test page</h1>
+  <p>Use only made-up field values. Do not click test links. Submissions are blocked locally; this page has no external assets.</p>
+  <form action="" method="post">
+    <h2>Same-origin login — informational</h2>
+    <label>Test username <input type="text" autocomplete="username"></label>
+    <label>Test password <input type="password" autocomplete="current-password"></label>
+    <label>Test notes <textarea></textarea></label>
+    <a href="https://different.example.invalid">paypal.com</a>
+    <p>This link label is inside a form, so PrivacyLens skips its text.</p>
+  </form>
+  <form action="https://receiver.example.invalid/collect" method="post">
+    <h2>External login destination — Review</h2>
+    <label>Test email <input type="email" autocomplete="email"></label>
+    <label>Test password <input type="password" autocomplete="current-password"></label>
+  </form>
+  <form action="https://receiver.example.invalid/checkout" method="post">
+    <h2>External payment-like form — Review</h2>
+    <label>Made-up card marker <input type="text" autocomplete="cc-number"></label>
+  </form>
+  <section>
+    <h2>Structural link examples</h2>
+    <ul>
+      <li><a href="https://paypal.com/">paypal.com</a> — matching label</li>
+      <li><a href="https://different.example.invalid/path?ignored=marker">paypal.com</a> — mismatched label</li>
+      <li><a href="https://bit.ly/synthetic-fixture">Shortened test link</a></li>
+      <li><a href="https://192.0.2.10/example">Reserved example IP link</a></li>
+      <li><a href="https://xn--bcher-kva.example/">Punycode example</a></li>
+      <li><a href="mailto:example@example.invalid">Mail link — ignored</a></li>
+    </ul>
+    <iframe title="Inline fixture frame" srcdoc="<p>Inline content; no external request.</p>"></iframe>
+  </section>
+  <script>
+    // Test-page safeguard only. PrivacyLens never adds listeners to the scanned page.
+    document.addEventListener('submit', event => event.preventDefault());
+  </script>
+</body>
+</html>

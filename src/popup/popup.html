@@ -19,6 +19,15 @@
     <p id="summary"></p>
     <h2 class="section-title">URL findings</h2>
     <div id="findings"></div>
+    <section id="page-scan" aria-labelledby="page-scan-heading" aria-busy="false">
+      <h2 class="section-title" id="page-scan-heading">Page scan</h2>
+      <button id="scan-page" type="button">Scan this page</button>
+      <p class="permission-context">Scans this page only when you ask. Form values are never read or saved.</p>
+      <p class="status" id="page-scan-status" hidden></p>
+      <p id="page-scan-summary" role="status">No page scan yet.</p>
+      <div id="page-scan-findings"></div>
+      <p class="permission-context">Closing the scan view discards the result. Here, the scan view is this popup.</p>
+    </section>
     <section aria-labelledby="permissions-heading">
       <h2 class="section-title" id="permissions-heading">Site permissions</h2>
       <p class="permission-context" id="permissions-context">Reading browser settings…</p>
