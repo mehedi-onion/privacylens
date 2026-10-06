@@ -1,3 +1,19 @@
+# Milestone 3 platform check
+
+Checked October 7, 2026 before coding against the [Manifest V3 management reference](https://developer.chrome.com/docs/extensions/reference/api/management).
+
+- `management` is the only added permission. No host grants are needed. The API also permits mutations; PrivacyLens uses only `getAll()` and `getPermissionWarningsById()`.
+- `ExtensionInfo` exposes name, description, enabled state, type, version, install type, API permissions, and host permissions. IDs support local warning lookup; they are omitted from the display model. This is not a full original/optional-permission manifest or evidence of use.
+- Generated warnings may be read by ID. A failed warning read is Unavailable; an empty list does not prove safety.
+- Promise forms are available from Chrome 88, matching this project's minimum. Desktop Chromium derivatives can differ. Firefox/mobile support is not promised.
+- Returned themes and app types are omitted; login-screen extensions are labeled. Managed items use the same capability rules. Built-ins, other profiles, and Store reputation are not guaranteed to be exposed.
+
+[Host-pattern documentation](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns): wildcard schemes mean HTTP/HTTPS; wildcard domains include subdomains; paths are ignored for host permissions; explicit ports can narrow scope. Browser site/file-access controls can limit actual reach.
+
+[Chrome permission warnings](https://developer.chrome.com/docs/extensions/reference/permissions-list) describe capabilities. Read-only behavior is enforced in code and tests, not by a read-only variant of `management`.
+
+---
+
 # Milestone 2 platform check
 
 Checked before implementation on October 6, 2026 against the [Chrome Manifest V3 contentSettings reference](https://developer.chrome.com/docs/extensions/reference/api/contentSettings).

@@ -12,10 +12,10 @@ async function sourceFiles(directory) {
   return groups.flat();
 }
 
-test('manifest has only activeTab/contentSettings and blocks outgoing connections', async () => {
+test('manifest has only activeTab/contentSettings/management and blocks outgoing connections', async () => {
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
   assert.equal(manifest.manifest_version, 3);
-  assert.deepEqual(manifest.permissions, ['activeTab', 'contentSettings']);
+  assert.deepEqual(manifest.permissions, ['activeTab', 'contentSettings', 'management']);
   for (const field of ['host_permissions', 'optional_permissions', 'optional_host_permissions', 'background', 'content_scripts', 'externally_connectable', 'web_accessible_resources']) {
     assert.equal(manifest[field], undefined, field);
   }
@@ -24,16 +24,21 @@ test('manifest has only activeTab/contentSettings and blocks outgoing connection
   const html = await readFile(new URL(manifest.action.default_popup, root), 'utf8');
   assert.match(html, /type="module" src="popup.js"/);
   assert.match(html, /href="popup.css"/);
+  assert.match(html, /href="\.\.\/extensions\/extensions.html" target="_blank" rel="noopener"/);
+  const auditHtml = await readFile(new URL('src/extensions/extensions.html', root), 'utf8');
+  assert.match(auditHtml, /type="module" src="extensions.js"/);
 });
 
 test('shipped source has no network, persistence, analytics, unsafe HTML or secret APIs', async () => {
   const files = [...await sourceFiles(new URL('src/', root)), ...await sourceFiles(new URL('data/', root))];
   // Static guardrail for this small, fully inspected source tree, not a general security scanner.
-  const forbidden = /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon|localStorage|sessionStorage|indexedDB|innerHTML|eval)\b|chrome\.(?:storage|history|webRequest|scripting)|console\.|https?:\/\//;
-  const secret = /-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:sk|ghp|github_pat)-[a-zA-Z0-9]{16,}|\b(?:api[_-]?key|client[_-]?secret)\s*[:=]/i;
+  const forbidden = /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon|localStorage|sessionStorage|indexedDB|innerHTML|eval)\b|chrome\.(?:storage|history|webRequest|scripting|cookies)|document\.cookie|console\.|https?:\/\/|\b(?:analytics|telemetry|gtag|mixpanel|segment)\b/i;
+  const mutations = /\b(?:setEnabled|uninstall|uninstallSelf|launchApp|createAppShortcut|generateAppForLink|setLaunchType|installReplacementWebApp)\s*\(|\bmanagement\s*\[|\bon(?:Installed|Enabled|Disabled|Uninstalled)\b/;
+  const secret = /-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:sk-[a-zA-Z0-9_-]{16,}|gh[pousr]_[a-zA-Z0-9]{16,}|github_pat_[a-zA-Z0-9_]{16,})|\b(?:api[_-]?key|client[_-]?secret)\s*[:=]|\b[a-f0-9]{64}\b/i;
   for (const file of files) {
     const source = await readFile(file, 'utf8');
     assert.doesNotMatch(source, forbidden, file.pathname);
+    assert.doesNotMatch(source, mutations, file.pathname);
     assert.doesNotMatch(source, secret, file.pathname);
   }
   const packageJson = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));

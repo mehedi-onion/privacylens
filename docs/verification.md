@@ -1,4 +1,31 @@
-# Milestone 2 verification
+# Milestone 3 verification
+
+Verified October 7, 2026 against the published Milestone 2 baseline `c405842`.
+
+## Automated and privacy checks
+
+- `node --test`: **73 passed, 0 failed**. The original 39 checks remain, with the manifest assertion updated for `management`; 34 new audit checks cover local explanations, broad/wildcard host scope, combination rules, enabled/disabled state, self/app/theme handling, empty and malformed responses, Chrome warnings, filters, fresh reads, stale response races, and closure during pending reads.
+- JavaScript syntax checks pass for all 21 source, data, and test files. Manifest/package JSON parse successfully; local HTML script/style targets resolve. Git whitespace checks pass.
+- Exact manifest permissions: `activeTab`, `contentSettings`, `management`. Minimum Chrome remains 88. There are no broad host grants, background workers, content scripts, external dependencies, or new storage permissions.
+- The management adapter uses only `getAll()` and `getPermissionWarningsById()`. Mock API proxies reject all other methods. Static inspection also forbids every management mutation and extension-event subscription.
+- Source/data scans detect no outgoing request APIs, remote assets, persistence, cookies, telemetry/analytics libraries, logging, unsafe HTML rendering, or secrets. Documentation URLs and synthetic URL strings in offline tests are references/fixtures, not runtime connections.
+- A separate pre-commit scan covers tracked and new project files for VirusTotal-style keys, API tokens, real passwords, private keys, and credential-bearing files. Known synthetic test markers are explicitly reviewed; no real secret was detected. Credential exclusions remain in `.gitignore`.
+- No extension names, IDs, permissions, hosts, warnings, findings, or timestamps are saved. The single in-memory display snapshot is cleared on pagehide. Late reads cannot restore a closed or superseded view. IDs are dropped after local warning lookup.
+- Broad hosts paired with debugger, nativeMessaging, or proxy can justify High Attention. Those permissions alone remain Review. Other specified combinations add stronger Review explanations without a percentage score or behavior accusation. Storage/notifications/bookmarks alone remain Normal.
+
+## Layout preview
+
+The shipped audit files and manifest policy were served on loopback with a temporary synthetic Chrome management mock outside the repository. Verified Normal/Review/High Attention rows, disabled-state context, local search, label filters, explanation expansion, generated warning text, and replacement via Read again. No real installed-extension inventory was read. The preview tab and server were closed after verification.
+
+Actual unpacked loading, accepting Chrome's management prompt, matching your real extension details, manually toggling a third-party extension in Chrome, and checking errors/storage/network still require [the manual Chrome checklist](manual-testing.md). The preview cannot verify the real permission lifecycle or all Chromium variants.
+
+## Git scope
+
+Milestone 3 is a separate commit following `c405842` with the message `feat: add read-only browser extension privacy audit`. Publication uses a normal push to `origin/main`, with no force push. No later-milestone work is included.
+
+---
+
+# Milestone 2 verification (historical)
 
 Verified on October 6, 2026. Milestone 1's record is preserved below.
 

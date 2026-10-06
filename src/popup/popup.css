@@ -32,3 +32,6 @@ footer p { margin: 4px 0; }
   details, footer { border-color: #47554b; }
   .status[data-status="Review"], .status[data-status="High Attention"] { background: #3e351f; color: #f2d69a; }
 }
+
+.audit-link { display: block; margin-top: 16px; padding: 8px 10px; border: 1px solid #769080; border-radius: 4px; color: inherit; text-align: center; text-decoration: none; font-weight: 600; }
+.audit-link:focus-visible { outline: 2px solid #466e58; outline-offset: 3px; }
