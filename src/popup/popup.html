@@ -19,6 +19,20 @@
     <p id="summary"></p>
     <h2 class="section-title">URL findings</h2>
     <div id="findings"></div>
+    <section aria-labelledby="vt-heading">
+      <h2 class="section-title" id="vt-heading">VirusTotal reputation · optional</h2>
+      <button id="vt-check" type="button">Check reputation with VirusTotal</button>
+      <p class="permission-context">Local checks work without this. Only a hostname lookup is offered.</p>
+      <div id="vt-consent" hidden>
+        <p>This check sends the selected domain or URL to VirusTotal for reputation lookup. PrivacyLens does not send browsing data to VirusTotal automatically.</p>
+        <p>Selected hostname: <strong id="vt-hostname"></strong></p>
+        <p class="permission-context">Only this hostname and your API key will be sent, without URL paths, queries or fragments. VirusTotal may scan queried indicators and include them in its shared dataset. Do not check confidential or personal hostnames.</p>
+        <button id="vt-confirm" type="button">Confirm hostname lookup</button>
+        <button id="vt-cancel" type="button">Cancel</button>
+      </div>
+      <div id="vt-result" role="status"></div>
+      <a href="../options/options.html" target="_blank" rel="noopener">VirusTotal settings</a>
+    </section>
     <section aria-labelledby="navigation-heading">
       <h2 class="section-title" id="navigation-heading">Navigation</h2>
       <div id="navigation-findings">Reading temporary navigation details…</div>
@@ -51,7 +65,7 @@
     <a class="audit-link" href="../extensions/extensions.html" target="_blank" rel="noopener">Review browser extensions</a>
   </nav>
   <footer>
-    <p>Local checks only. No browsing history saved.</p>
+    <p>Local checks by default. VirusTotal only after confirmation. No browsing history saved.</p>
     <p>Closing this popup clears this scan. Reopen to check again.</p>
   </footer>
 </body>

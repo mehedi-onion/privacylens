@@ -1,0 +1,23 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; color: #26332c; background: #fafbf9; }
+* { box-sizing: border-box; }
+body { max-width: 680px; margin: 0 auto; padding: 30px 24px; font-size: 15px; line-height: 1.6; }
+h1 { margin: 0; font-size: 25px; }
+h2 { font-size: 17px; margin-top: 28px; }
+.eyebrow { margin: 0; font-size: 13px; font-weight: 650; }
+label { display: block; margin-top: 16px; }
+#vt-key { display: block; width: 100%; }
+input, button { font: inherit; color: inherit; background: inherit; border: 1px solid #769080; border-radius: 4px; padding: 8px; }
+button { cursor: pointer; }
+button:disabled { opacity: .6; cursor: default; }
+.remember { display: flex; align-items: start; gap: 8px; }
+.remember input { margin-top: 7px; }
+.controls { display: flex; gap: 12px; }
+.context, footer { font-size: 13px; color: #57665e; }
+a { color: inherit; }
+footer { border-top: 1px solid #d6dfd8; margin-top: 28px; padding-top: 12px; }
+:focus-visible { outline: 2px solid #466e58; outline-offset: 3px; }
+@media (prefers-color-scheme: dark) {
+  :root { color: #e3ebe5; background: #202722; }
+  .context, footer { color: #bdcbbf; }
+  footer { border-color: #47554b; }
+}

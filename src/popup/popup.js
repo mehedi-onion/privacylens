@@ -8,8 +8,10 @@ import { renderDownloadCheck, clearDownloadCheck } from '../downloads/download-v
 import { readNavigation } from '../navigation/navigation-reader.js';
 import { adviseNavigation } from '../navigation/navigation-advisor.js';
 import { renderNavigation, clearNavigation } from '../navigation/navigation-view.js';
+import { createReputationController } from '../reputation/reputation-controller.js';
+import { adviseReputation } from '../reputation/reputation-advisor.js';
 
-export async function scanCurrentTab(chromeApi, document, { signal, now = Date.now, schedule = setTimeout, unschedule = clearTimeout } = {}) {
+export async function scanCurrentTab(chromeApi, document, { signal, now = Date.now, schedule = setTimeout, unschedule = clearTimeout, renderLocal = renderResult } = {}) {
   let tab;
   try {
     [tab] = await chromeApi.tabs.query({ active: true, currentWindow: true });
@@ -26,13 +28,13 @@ export async function scanCurrentTab(chromeApi, document, { signal, now = Date.n
   if (navigation.remainingMs <= 0) { navigation.available = false; navigation.snapshot = null; }
   const permissions = advisePermissions(readings);
   const navigationAdvice = adviseNavigation(navigation.snapshot, result);
-  renderResult(document, result, permissions, navigationAdvice);
+  renderLocal(document, result, permissions, navigationAdvice);
   renderNavigation(document, navigationAdvice);
   if (navigation.available) {
     const expiry = schedule(() => {
       if (signal?.aborted) return;
       renderNavigation(document, adviseNavigation(null, result));
-      renderResult(document, result, permissions);
+      renderLocal(document, result, permissions);
     }, navigation.remainingMs);
     signal?.addEventListener('abort', () => unschedule(expiry), { once: true });
   }
@@ -51,16 +53,32 @@ export function clearPopup(document) {
 // Browser globals stay here; the analyzer can also run in offline Node tests.
 if (typeof chrome !== 'undefined' && typeof document !== 'undefined') {
   const lifecycle = new AbortController();
+  let context = null;
+  let reputation = null;
+  function renderLocal(doc, result, permissions, navigation = { status: 'Normal' }) {
+    context = { result, permissions, navigation };
+    const external = reputation?.hostname === result.domain ? adviseReputation(result, reputation) : null;
+    renderResult(doc, result, permissions, navigation, external);
+  }
+  const reputationCheck = createReputationController(chrome, document, { signal: lifecycle.signal, onReport(report) {
+    reputation = report;
+    if (context && !lifecycle.signal.aborted) renderLocal(document, context.result, context.permissions, context.navigation);
+  } });
   const pageScan = createPageScanController(chrome, document, { signal: lifecycle.signal });
   const downloadCheck = createDownloadController(chrome, document, renderDownloadCheck, clearDownloadCheck, { signal: lifecycle.signal });
   document.getElementById('scan-page').addEventListener('click', () => void pageScan.scan());
   document.getElementById('read-download').addEventListener('click', () => void downloadCheck.read());
+  document.getElementById('vt-check').addEventListener('click', () => void reputationCheck.begin());
+  document.getElementById('vt-confirm').addEventListener('click', () => void reputationCheck.confirm());
+  document.getElementById('vt-cancel').addEventListener('click', () => reputationCheck.cancel());
   void downloadCheck.read();
-  void scanCurrentTab(chrome, document, { signal: lifecycle.signal });
+  void scanCurrentTab(chrome, document, { signal: lifecycle.signal, renderLocal });
   window.addEventListener('pagehide', () => {
     lifecycle.abort();
     pageScan.clear();
     downloadCheck.clear();
+    reputationCheck.clear();
+    reputation = null; context = null;
     clearPopup(document);
   }, { once: true });
 }

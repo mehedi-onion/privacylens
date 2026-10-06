@@ -1,5 +1,6 @@
 import { createDownloadObserver } from '../downloads/download-observer.js';
 import { createNavigationObserver } from '../navigation/navigation-observer.js';
+import { registerReputationWorker } from '../reputation/reputation-worker.js';
 
 export function registerDownloadWorker(chromeApi, options) {
   const api = chromeApi.downloads;
@@ -37,4 +38,5 @@ export function registerNavigationWorker(chromeApi, options) {
 if (typeof chrome !== 'undefined') {
   registerDownloadWorker(chrome);
   registerNavigationWorker(chrome);
+  registerReputationWorker(chrome);
 }

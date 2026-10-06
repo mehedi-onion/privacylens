@@ -2,7 +2,7 @@
 
 **Understand what websites and browser extensions can access before you trust them.**
 
-PrivacyLens is an early privacy-oriented browser extension prototype. **Milestone 6** analyzes the current URL locally, reads current-site content settings where Chrome allows it, audits installed-extension permissions, scans current-page structure only when you ask, explains the latest temporarily observed download event, and shows Chrome-reported redirect/navigation qualifiers for the current tab. All explanations are local. It does not maintain browsing/navigation history, save an extension inventory, store page scans, or keep a download history.
+PrivacyLens is an early privacy-oriented browser extension prototype. **Milestone 7** analyzes the current URL locally, reads current-site content settings where Chrome allows it, audits installed-extension permissions, scans current-page structure only when you ask, explains the latest temporarily observed download event, and shows Chrome-reported redirect/navigation qualifiers for the current tab. These checks are local. An optional, separately confirmed VirusTotal lookup adds external domain-reputation evidence. It does not maintain browsing/navigation history, save an extension inventory, store page scans, or keep a download history.
 
 **See → Understand → Decide → Forget.**
 
@@ -10,7 +10,7 @@ It analyzes signals, not intent. A warning means **“review this”**, not **�
 
 ## Load in Chrome or Chromium
 
-1. Use desktop Chrome/Chromium 92 or newer with Manifest V3 support.
+1. Use desktop Chrome/Chromium 102 or newer with Manifest V3 support.
 2. Open `chrome://extensions` (in Brave, `brave://extensions`).
 3. Enable **Developer mode**, click **Load unpacked**, and select this `privacylens` folder containing `manifest.json`.
 4. Pin PrivacyLens from the browser's extensions menu.
@@ -20,8 +20,9 @@ It analyzes signals, not intent. A warning means **“review this”**, not **�
 8. Click **Scan this page** to inspect the current top-level page’s structural metadata. Expand a finding for its reason and suggestion. Closing the popup discards this page scan.
 9. After downloading a file, open the popup promptly and inspect **Recent download check**. Use **Check recent download** for a fresh read of the current temporary record.
 10. After navigating in the focused active tab, open the popup promptly and inspect **Navigation**. Expand a reported qualifier for its explanation. Missing data is explicitly unavailable.
+11. Optional: open **VirusTotal settings**, enter your own fresh key, and save without Remember for session-only use. Then click **Check reputation with VirusTotal**, read the hostname disclosure, and confirm only if you want to share it.
 
-No installation command, build step, packages, or account are required. Reload when upgrading and accept added permissions if Chrome prompts. Milestone 6 adds `webNavigation`; Milestone 4’s function-injection API still requires Chrome 92. The existing `management` permission may say it can manage apps, extensions, and themes because it includes mutation capabilities. PrivacyLens deliberately uses only its read APIs. The existing `contentSettings` permission also bundles reading and writing; this code only reads settings.
+No installation command, build step, packages, or account are required for local checks. VirusTotal alone needs your own eligible account/key. Reload when upgrading and accept added permissions if Chrome prompts. Milestone 7 adds `storage` for the optional key and anonymous session-only quota counters; Chrome 102 is required for session storage and restricted storage access. VirusTotal host access is optional and requested only from the lookup confirmation click. The existing `management` permission may say it can manage apps, extensions, and themes because it includes mutation capabilities. PrivacyLens deliberately uses only its read APIs. The existing `contentSettings` permission also bundles reading and writing; this code only reads settings.
 
 ## What it shows
 
@@ -40,7 +41,7 @@ Each row explains what the feature allows, common legitimate uses, when to revie
 | --- | --- |
 | Normal | No rule requires review; informational findings or Unavailable permission rows may still appear. |
 | Review | A URL review signal, an unavailable URL assessment, or camera + microphone + location all Allowed. |
-| High Attention | A non-internal HTTP address also contains sensitive-action words, a brand mismatch, or username/@ syntax. Site settings alone never cause this label. |
+| High Attention | A non-internal HTTP address also contains sensitive-action words, a brand mismatch, or username/@ syntax. Site settings alone never cause this label. A separately requested reputation report can also justify High Attention only for at least three malicious vendor verdicts alongside both a local brand mismatch and username/@ syntax. |
 
 Camera alone, notifications alone, and even camera plus microphone do not automatically escalate the status. When all three sensitive settings are Allowed, the popup asks whether you still need them. It makes no inference about intent.
 
@@ -72,7 +73,10 @@ The audit label is separate from the current website's status. Chrome warnings a
 | `management` | Read other installed extensions and their permission warnings for the audit. No narrower read-only permission exposes this inventory. | This implementation does not disable, uninstall, launch, change extensions, or modify permissions. The permission itself also permits management actions, so read-only behavior is a code boundary. |
 | `scripting` | Run one bundled, read-only DOM collector in the active tab’s top frame after **Scan this page**. It works with temporary `activeTab` access; no persistent host permissions are needed. | This implementation does not modify pages, submit forms, read field values, inspect frame documents, inject CSS, register persistent scripts, or monitor page changes. The permission can support changes in other code; read-only behavior is enforced here. |
 | `downloads` | Observe Chrome download events and read metadata only for the ID in a relevant change event. No narrower permission supplies these events. | This code never initiates, cancels, pauses, resumes, opens, reveals, deletes, accepts danger, or changes download UI. The permission also grants broader management/history access, so read-only behavior is enforced in code. No `downloads.open`, `downloads.shelf`, or `downloads.ui` permission is requested. |
+| `storage` | Keep the optional key in browser-session memory by default; save only that key to local storage if Remember is checked. Anonymous numerical request counters/deadlines also remain in session memory across worker suspension. Storage is restricted to trusted extension contexts. | No sync, scan/report/domain storage, extension inventory, download history, or browsing database. It is a broad storage capability restricted by this implementation, not an encrypted secret vault. |
 | `webNavigation` | Read top-level committed qualifiers and verify the current frame/document for the popup. This is the minimum permission for these signals; no host grants are needed. | It does not expose a complete redirect chain. PrivacyLens does not reconstruct history, collect earlier URLs, inspect traffic, change navigation, or retain background-tab records. Its broader capability is restricted by this code. |
+
+**Optional host grant:** `https://www.virustotal.com/*` allows the one HTTPS API host after your confirmation. Chrome host grants cannot be limited to one path; the code uses only `GET /api/v3/domains/{hostname}`, and the connection policy allows only that domain-report path. There are no required host grants, all-sites patterns, URL submissions, uploads, or non-VirusTotal network adapters. Declaring the optional host does not grant it automatically. It can be revoked in Chrome’s extension settings.
 
 There is no read-only variant of `contentSettings`; do not interpret this manifest permission as technically incapable of changing settings. Read-only behavior is enforced by the implementation and verified with mocked setter methods that must never be called.
 
@@ -138,20 +142,43 @@ Only **one focused active regular tab's current top-level document** is retained
 
 Opening the popup makes one local read. The worker verifies the active tab and its current top-level frame using `getFrame({tabId, frameId: 0})`; Chrome 106+ document IDs prevent stale document matches. Older Chrome uses origin matching plus observed navigation-start/commit cleanup, which cannot distinguish documents as precisely. The current URL analysis remains the popup's existing activeTab read. Same-document path/fragment changes retain the initial committed qualifiers when the document still matches. The popup clears on closing/expiry. Idle worker suspension can discard the snapshot after about 30 seconds; open promptly and accept Unavailable rather than treating it as no redirect.
 
+## Optional VirusTotal reputation
+
+PrivacyLens works fully without VirusTotal or a key. It is enrichment, not the local decision engine. Opening a popup, switching tabs, scanning a page, saving a key, receiving a download, or observing navigation never starts a reputation request.
+
+**Check reputation with VirusTotal** first selects the current public hostname and shows a notice. Only **Confirm hostname lookup** requests optional host access and asks the worker for one lookup. Cancelling or denying Chrome’s grant sends nothing. Incognito/unknown contexts, local/internal/reserved names and raw IP addresses are excluded. Confidential public-looking hostnames cannot reliably be recognized: review the displayed name yourself.
+
+The only endpoint is **GET `https://www.virustotal.com/api/v3/domains/{hostname}`** with the user-provided key in the `x-apikey` header. It checks the exact selected hostname, including subdomains, rather than guessing a registrable domain. It drops the URL’s scheme, port, credentials, path, query and fragment. There is no request body, cookie, or referrer; requests reject redirects and time out after 12 seconds. Page contents, typed values, history, installed extensions and downloaded files/hashes are never sent. VirusTotal naturally receives connection metadata such as your IP address.
+
+**Lookup-only does not mean private.** VirusTotal’s [domain endpoint notice](https://docs.virustotal.com/reference/domain-info) says queried indicators may be scanned and included in its shared dataset/community. PrivacyLens does not submit/rescan an unknown domain: a 404 says **No existing VirusTotal report found**. What VirusTotal does with an indicator it receives is outside this extension’s control. Do not look up confidential or personal hostnames.
+
+The popup shows the existing report’s malicious, suspicious, harmless and undetected vendor counts, plus timeout if supplied. Missing or malformed reports fail safely. Labels are **No strong warning found**, **Some security engines flagged this domain**, or **Multiple engines flagged this domain**. No verdicts means no vendor verdicts available. **A clean result does not guarantee safety**, and reports may be old or incomplete.
+
+Any vendor flag can add Review; three or more combined flags receive the multiple-engines wording. A clean report never removes local Review or High Attention, including sensitive site-setting context. Vendor counts alone never cause High Attention. At least three malicious verdicts plus both a local brand mismatch and username/@ syntax can justify High Attention, with that combination explained. URL/reputation guidance is displayed separately from site-permission and page-scan details.
+
+### Key and quota handling
+
+Enter a fresh key only in the settings page. **Save key** does not validate it online. The password field is cleared immediately and the saved key is never prefilled or returned to the popup. There is no bundled key, remote secret store, or sync storage.
+
+- Default: key in `chrome.storage.session`, memory only. Closing the settings page/popup does not lose it; browser restart or extension reload/disable/update does. It survives worker suspension.
+- **Remember this key on this browser**: only the key string is saved in `chrome.storage.local`. PrivacyLens does not encrypt it as a secret vault; someone with profile access may recover it.
+- **Forget key** removes both copies and aborts a pending lookup. It does not revoke the key at VirusTotal or recall a request already sent. Switching modes removes the prior copy. Storage access is restricted to trusted extension contexts before any key read/write.
+
+The [public API](https://docs.virustotal.com/reference/public-vs-premium-api) allows **4 requests/minute and 500/day** and has personal/academic, non-commercial restrictions. It must not be used for commercial products/services or restricted business workflows, or have quotas bypassed through multiple accounts. Review the terms for your use.
+
+PrivacyLens spaces manual requests at least **20 seconds** apart and caps its own browser-session budget at **500 per UTC day**. Only four anonymous numbers (UTC day, count, next allowed time, blocked-until time) remain in session storage; they contain no domains, reports or activity records. Worker restart preserves the budget; browser restart/extension reload clears session memory. VirusTotal’s account-wide quota remains authoritative, including other clients. Changing/forgetting the key does not reset the budget. No polling or automatic retry occurs.
+
+A 429 shows **VirusTotal rate limit reached. Try again later.** Retry-After is respected with at least a minute cooldown (bounded at a day); a QuotaExceededError conservatively blocks until the next UTC midnight, even if the actual quota interval is different. Monthly/account limits may still apply afterward. Fixed messages explain 401, 403, 404, server errors, malformed responses and network failures without exposing keys or raw server errors.
+
 ## Privacy
 
-All URL analysis, setting reads, extension auditing, page scans, navigation and download metadata explanations happen locally. Chrome itself stores its existing site settings; **PrivacyLens only reads them**.
+Local URL analysis, site settings, extension auditing, page scans, download metadata and navigation explanations stay in the browser. Chrome maintains its own records; PrivacyLens only reads them. The [privacy table and data boundaries](docs/privacy.md) explain the optional external lookup.
 
-- No persistent host patterns, `tabs`, storage, history, or network-monitoring permissions.
-- One minimal event-driven worker for a download event and a current navigation snapshot; no traffic recording, automatic/persistent content script, server/backend, account, analytics, AI API, CDN, API keys, or secrets. The only page injection is the one-shot collector after your click.
-- No outgoing network requests. `connect-src 'none'` applies to all extension pages; scripts/styles/data are bundled locally.
-- No persistent domains, permission states, findings, timestamps, installed-extension names, IDs, permissions, host access, inventories, or history. No visited URLs or settings are transmitted.
-- The site-setting reader sends only the origin to the browser's local API; it drops credentials, paths, query values, and fragments. No raw addresses or API errors are logged.
-- Website/page scan data exists only in popup memory and rendered text. Closing it discards the scan, clears its display, and prevents pending reads from repainting it. Reopening performs a fresh check.
-
-The audit keeps one snapshot in page memory and rendered text. Closing the view clears it and prevents late reads from repainting. Reloading or using **Read again** performs a fresh read and replaces the previous result. Filters use memory only; they do not query Chrome or save the search. No cookies or persistence APIs are used.
-
-The browser's own history, settings, installed-extension registry, and network activity remain separate from PrivacyLens. PrivacyLens only reads Chrome's existing records.
+- No browsing/navigation/download history, saved scans, reputation cache, extension inventory, analytics, telemetry, backend, AI API or remote assets.
+- No persistent website host grants. VirusTotal alone has an optional API-host grant; the only external request is a separately confirmed domain GET.
+- Only an explicitly remembered key is written to disk. The session key and anonymous quota numbers use memory-only session storage. No cookies, localStorage, IndexedDB, or sync are used.
+- No raw URL/error/key logging. Local APIs receive sanitized origins where needed. The one-shot page collector never reads typed form values.
+- Results live in the current view or the existing short-lived worker snapshots. Closing the reputation/page/audit view clears its display and rejects late responses; reopening does not restore reputation reports. Only one current navigation/download snapshot can briefly remain under their existing expiry rules.
 
 ## Offline tests
 
@@ -161,7 +188,7 @@ Use Node.js 22 or newer from this folder:
 node --test
 ```
 
-If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, download danger/filename/source rules, incognito filtering, event-only ID lookups, expiry, worker recreation, navigation qualifiers/document matching/tab cleanup, local messaging, and source privacy guardrails.
+If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, download danger/filename/source rules, incognito filtering, event-only ID lookups, expiry, worker recreation, navigation qualifiers/document matching/tab cleanup, local messaging, and source privacy guardrails. Reputation tests mock every request and cover opt-in confirmation, key modes/removal, quota state, sanitization, errors, response whitelisting, conservative integration and closing races.
 
 ## Files to learn
 
@@ -177,7 +204,17 @@ src/analysis/risk-model.js                 URL label rules
 src/permissions/site-permission-reader.js  Chrome content-settings adapter
 src/permissions/permission-definitions.js  Explanation text and supported states
 src/permissions/permission-advisor.js      Conservative advice/status integration
-src/background/service-worker.js          Download/current-navigation events and local message access
+src/background/service-worker.js          Download/navigation events and authenticated local messages
+src/options/                              Optional key settings, save/forget UI
+src/reputation/domain-rules.js             Public-hostname sanitization
+src/reputation/key-store.js                Key-only storage and anonymous session quota
+src/reputation/quota-limiter.js            Conservative request spacing/budget
+src/reputation/virustotal-client.js        One fixed HTTPS domain GET, no submission
+src/reputation/reputation-worker.js        Confirmed lookup and key message access
+src/reputation/reputation-advisor.js       Whitelisted counts and conservative guidance
+src/reputation/reputation-controller.js    Two-click consent and result clearing
+src/reputation/reputation-messages.js      Fixed errors, no raw secrets
+src/reputation/reputation-view.js          Text-only evidence rendering
 src/downloads/danger-definitions.js        Documented Chrome classifications and fallbacks
 src/downloads/filename-rules.js            Explainable basename heuristics
 src/downloads/download-analyzer.js         Whitelist/sanitization and local download advice
@@ -212,13 +249,14 @@ docs/fixtures/page-scan.html               Local structural test page
 docs/fixtures/downloads.html               Harmless download test links
 docs/fixtures/download-sample.pdf          Simple harmless PDF
 docs/fixtures/download-sample.txt          Plain-text naming fixture
+docs/privacy.md                           Core privacy table and optional disclosure
 docs/verification.md                      Verification record
 ```
 
-Chrome API access stays separate from explanation and analysis logic. The background worker handles only the documented download events and minimum navigation/cleanup events; other features keep their existing on-demand behavior.
+Chrome API access stays separate from explanation and analysis logic. The background worker handles documented download/navigation events plus authenticated key/confirmed-lookup messages; other features keep their existing on-demand behavior.
 
 ## Scope and limitations
 
-Milestone 6 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirect chains, file contents, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, VirusTotal, fuzzy matching, or offensive security features.
+Milestone 7 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirect chains, file contents, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, URL submissions, file reputation/upload, fuzzy matching, or offensive security features.
 
 The URL reference lists remain deliberately small. Permission settings are top-level-site snapshots; inherited defaults, one-time grants, OS rules, embedded frames, and Chromium derivatives can limit what the API tells us. Missing data is shown honestly as Unavailable. See [platform limits](docs/platform-limits.md) and [manual testing](docs/manual-testing.md).

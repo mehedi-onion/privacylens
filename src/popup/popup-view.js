@@ -2,8 +2,8 @@ import { advisePermissions, combineStatuses } from '../permissions/permission-ad
 
 const summaries = {
   Normal: 'No review signals from these limited checks. This is not a guarantee of safety.',
-  Review: 'Review the URL findings, navigation context and site permissions before sharing sensitive information. A warning does not mean this site is malicious.',
-  'High Attention': 'HTTP appears alongside a sensitive action, brand mismatch, or user information. Check the destination before sharing private information.'
+  Review: 'Review local findings, site permissions, navigation and any requested reputation evidence before sharing sensitive information. A warning does not mean this site is malicious.',
+  'High Attention': 'Several signals deserve close review. Check the URL findings and any requested reputation evidence before sharing private information.'
 };
 
 function appendExplanation(document, details, label, value) {
@@ -14,11 +14,11 @@ function appendExplanation(document, details, label, value) {
   details.append(paragraph);
 }
 
-export function renderResult(document, result, advice = advisePermissions(), navigation = { status: 'Normal' }) {
+export function renderResult(document, result, advice = advisePermissions(), navigation = { status: 'Normal' }, reputation = null) {
   document.getElementById('domain').textContent = result.domain ?? 'Address unavailable';
   document.getElementById('scheme').textContent = result.scheme ? `Connection scheme: ${result.scheme}` : 'Website analysis unavailable';
   const status = document.getElementById('status');
-  const combinedStatus = combineStatuses(combineStatuses(result.status, advice.status), navigation.status);
+  const combinedStatus = combineStatuses(combineStatuses(combineStatuses(result.status, advice.status), navigation.status), reputation?.status ?? 'Normal');
   status.textContent = combinedStatus;
   status.dataset.status = combinedStatus;
   status.hidden = false;

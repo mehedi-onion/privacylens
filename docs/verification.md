@@ -1,3 +1,36 @@
+# Milestone 7 verification
+
+Verified October 7, 2026 against the published redirect-awareness baseline `6f260b6bcce59ee85db823d6594c48bbe55a241c`.
+
+## Automated and privacy checks
+
+- **250 tests passed, 0 failed**: all 186 baseline checks remain, with manifest/network-storage guard expectations updated for the explicitly scoped optional feature. The 64 added cases cover key modes/removal/restricted access/failures, public-host sanitization, report whitelisting, conservative combined guidance, 200/400/401/403/404/429/5xx/malformed/network errors, finite timeout, session-safe throttling/daily budget, explicit two-step consent, no startup/tab-change lookup, authenticated message boundaries, host denial, changed-tab rejection, cancellation/closure/races, settings and text-only UI.
+- All VirusTotal calls in tests and the browser preview are **mocked**. No real API key was accessed, committed, or used, and no live reputation lookup/submission occurred.
+- Syntax checks pass for **51 JavaScript files**. JSON parsing, version consistency (0.7.0), relative imports, local HTML assets and Git whitespace checks pass. No external dependencies were added.
+- The only new required permission is **storage**. The exact HTTPS VirusTotal host is optional and requested from the second confirmation click; no required host permissions, all-sites grant, history/webRequest/tabs additions or mutation APIs were introduced. Chrome minimum is 102 for session storage/access restrictions. CSP permits only the domain-report API path, with local scripts/styles.
+- The sole request adapter is a fixed HTTPS domain GET with x-apikey header, omitted cookies/referrer, no body/cache, refused redirects and a 12-second abort timeout. No full URL, path/query/fragment, page/form data, file/hash, permission state, history or extension inventory is sent. No POST, upload, rescan, automatic lookup, timer retry or polling exists.
+- Storage is isolated to the key adapter. Both areas are restricted to trusted extension contexts before key access. Default key and four anonymous quota numbers use memory-only session storage; an explicit Remember choice saves **only the key** to local disk storage. No sync or scan/report/domain persistence exists. Forget removes both key copies without resetting quota; failures are reported honestly. Storage-operation tests reject extra quota fields and verify no domain/result reaches storage.
+- Requests are spaced at least 20 seconds and budgeted at most 500 per UTC day in this browser session, including worker recreation. 429 cooldown respects bounded Retry-After; QuotaExceededError waits conservatively until UTC midnight. Account quotas remain authoritative, including other clients, session resets and monthly limits. No retries or bypass behavior occur.
+- Fixed error messages never echo raw exceptions, server bodies or keys. Source guards retain no logging, telemetry, unsafe HTML, management/download mutations, browser history monitoring or website field-value access. All prior read-only and collector value-trap tests continue passing.
+- Publication secret scan covers all tracked/new files for VirusTotal-style keys, API/service tokens, real passwords, private keys, credential files and URL credentials. Reviewed exceptions are synthetic test markers, Boolean password-field metadata and the dynamic x-apikey header variable, never a real key. No secret was detected.
+- Clean external reports do not lower local Review/High Attention, including site settings. Any flag can add Review, while multiple vendor flags alone remain Review. New High Attention requires at least three malicious verdicts plus both local brand mismatch and username/@ syntax; visible explanation identifies that combination. Counts indicate vendor judgments, not proof of misuse.
+
+## Browser preview and remaining checks
+
+The actual popup, options, worker/message/key adapters and count renderer were exercised on loopback under the manifest CSP, with a synthetic key, Chrome mock and replaced request adapter. Verified: no-key guidance; zero calls on configuration/first-click disclosure/cancel; one call after confirmation; sanitized hostname path without query/fragment; counts/Review integration; private fixed invalid-key guidance; session Save, explicitly checked Remember and Forget; empty field after Save; no errors/warnings; reload clearing the previous result. A preview image is saved beside the project. No real browser inventory, credential or external report was used. The temporary harness is outside the repository and is removed from the active browser/server after verification.
+
+This does not prove actual Chrome unpacked loading, the optional-host prompt, profile/session storage lifetimes, or a real VirusTotal account's restrictions/report/CORS behavior. Those remain [the exact personal Chrome checks](manual-testing.md). Use a fresh key only in settings and a public hostname whose disclosure is acceptable. Mock coverage supplies suspicious/error/quota cases without consuming live quota or visiting malicious sites.
+
+## Documented disclosure and Git scope
+
+The [core privacy table](privacy.md), popup disclosure, settings, README and platform record distinguish local features from the confirmed external domain lookup. They explicitly disclose VirusTotal's queried-indicator sharing policy, public API limits/restrictions, unencrypted profile key storage and no guaranteed-safety result.
+
+Milestone 7 is a separate commit after `6f260b6`, with message `feat: add opt-in VirusTotal reputation checks`. Publication uses a normal push to origin/main, never force push. No later milestone, URL/file submission, backend, analytics or scan-history database is included.
+
+---
+
+The following verification sections are historical records for earlier baselines.
+
 # Milestone 6 verification
 
 Verified October 7, 2026 against published download baseline `3662f3c05c362cadfedab299c9bcbd71eed85e6a`.

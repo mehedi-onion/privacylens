@@ -36,6 +36,6 @@ export function advisePermissions(readings = []) {
 }
 
 export function combineStatuses(urlStatus, permissionStatus) {
-  if (urlStatus === 'High Attention') return 'High Attention';
+  if (urlStatus === 'High Attention' || permissionStatus === 'High Attention') return 'High Attention';
   return urlStatus === 'Review' || permissionStatus === 'Review' ? 'Review' : 'Normal';
 }

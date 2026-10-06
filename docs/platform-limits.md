@@ -1,3 +1,43 @@
+# Milestone 7 platform check
+
+Verified **before implementation**, October 7, 2026, against official VirusTotal v3 and Chrome documentation. Baseline: `6f260b6bcce59ee85db823d6594c48bbe55a241c`.
+
+## Endpoint, evidence and privacy
+
+- [Domain report GET](https://docs.virustotal.com/reference/domain-info): `GET /api/v3/domains/{domain}` with `x-apikey`. This retrieves an existing domain object; the extension implements only this endpoint.
+- [Domain object](https://docs.virustotal.com/reference/domains-object): `last_analysis_stats` contains malicious, suspicious, harmless, undetected and timeout vendor counts. PrivacyLens requires the four verdict counts, treats timeout as optional, verifies object type/hostname and discards all other attributes. It does not invent report dates or engine detail.
+- [API errors](https://docs.virustotal.com/reference/errors): 401 authentication/account activation, 403 restricted access, 404 no resource, 429 quota or excessive requests, and 5xx server conditions. Errors are mapped to fixed text, never copied from server messages. Daily quota reset is 00:00 UTC.
+- [URL report GET](https://docs.virustotal.com/reference/url-info) uses a URL identifier (including unpadded URL-safe base64); [URL submission](https://docs.virustotal.com/reference/scan-url) uses POST. These were checked for scope but are **not implemented**. No URL encoding/submission, domain rescan, file/hash lookup or upload is present.
+- The domain GET notice says **queried and submitted indicators may be scanned and added to the shared dataset/community**. Thus lookup-only is not confidential processing. The consent notice discloses this. A 404 is shown without a submission request; VirusTotal may independently process queried indicators under its policy.
+
+## Public API and restrictions
+
+[Public vs premium](https://docs.virustotal.com/reference/public-vs-premium-api) documents **4 requests/minute and 500/day**, restrictions on commercial products/services and business workflows that do not contribute files, and prohibition of quota bypass through multiple accounts. [Public/private guidance](https://docs.virustotal.com/docs/difference-public-private) describes permitted personal/academic, non-commercial use. Review the account's current terms; this prototype does not assume it qualifies for commercial deployment.
+
+Official [privacy](https://docs.virustotal.com/docs/privacy-policy) and [terms](https://docs.virustotal.com/docs/terms-of-service) pages currently redirect to Google Cloud terms/privacy material. The domain-query notice remains explicitly relevant. PrivacyLens cannot control vendor retention, shared datasets, report freshness, or account-wide quotas.
+
+The implementation spaces its own confirmed requests by at least 20 seconds and budgets at most 500 per UTC day within a browser session. A 429 honors a bounded Retry-After (at least a minute); QuotaExceededError conservatively waits until UTC midnight. That error can concern different quota intervals, so this may over-delay a minute quota or still be insufficient for monthly restrictions. No automatic retries or quota bypass occur. Other applications using the same key can consume its quota.
+
+## Chrome access and key lifetime
+
+[Cross-origin requests](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests) from an extension worker need host access. [Optional permissions](https://developer.chrome.com/docs/extensions/reference/api/permissions) let the exact HTTPS origin `https://www.virustotal.com/*` be requested inside the confirmation user gesture. No extra manifest permission is needed to use the permissions API. No required host access, `<all_urls>`, new history/webRequest/tabs or external-content permission is added. Host-grant paths are ignored by Chrome: only code and CSP restrict requests to the domain-report API path. A grant retained by Chrome does not initiate subsequent requests automatically.
+
+The only new required manifest permission is **storage**. [Chrome storage](https://developer.chrome.com/docs/extensions/reference/api/storage) documents memory-only `storage.session` and `setAccessLevel` from **Chrome 102**. The minimum is raised to 102. Session data clears on restart, extension reload/update/disable but survives worker suspension. Promise-based storage and permissions operations used here are supported by that minimum.
+
+Both local and session areas are restricted with `TRUSTED_CONTEXTS` before any key access. Only an explicit Remember choice writes the key to local disk storage; no sync is used. Anonymous numeric quota state uses session storage, not a scan log. The session approach avoids losing the key/quota every time an MV3 worker stops. Closing a popup discards its report without clearing the separately configured session key. Key storage is not an encrypted vault.
+
+Only the authenticated popup can request a confirmed lookup or cancellation; only the authenticated options page can save/forget a key. Status replies contain configuration mode, never the key. The worker rechecks active tab ID, public hostname and optional host grant before requesting. Content scripts, foreign pages and private contexts cannot use these messages. Local features keep working when key/host/storage is absent.
+
+## Boundaries and limitations
+
+The exact current hostname is shared, not a guessed registrable domain. Local/internal/reserved names, public/private IP addresses, malformed input and incognito/unknown contexts are declined without DNS or network checks. Public-looking confidential names cannot be reliably excluded. No full URL, query, fragment, path, credential, page/form content, browser cookie, inventory or file is sent. The API key header and normal network metadata necessarily reach VirusTotal.
+
+The single adapter uses HTTPS GET, omitted cookies/referrer, no request body, no cache, refused redirects and a 12-second abort timeout. Reports/errors are whitelisted and never persisted. Response counts alone cannot create High Attention; strong local brand-mismatch plus username syntax and at least three malicious vendor verdicts are required for new escalation. Clean reports never reduce local status. Browser APIs and lifecycle/grant behavior still need real Chrome manual tests; automated requests remain mocked.
+
+---
+
+The following sections record platform checks for earlier milestones; their old permission/version statements describe those baselines.
+
 # Milestone 6 platform check
 
 Checked **before coding** on October 7, 2026 against official [webNavigation](https://developer.chrome.com/docs/extensions/reference/api/webNavigation), [worker events](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/events), [worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle), [tabs](https://developer.chrome.com/docs/extensions/reference/api/tabs), [windows](https://developer.chrome.com/docs/extensions/reference/api/windows), and [runtime messaging](https://developer.chrome.com/docs/extensions/reference/api/runtime) documentation.

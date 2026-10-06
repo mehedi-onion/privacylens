@@ -12,16 +12,18 @@ async function sourceFiles(directory) {
   return groups.flat();
 }
 
-test('manifest has only the six required permissions and blocks outgoing connections', async () => {
+test('manifest permits only optional domain lookups and the required local APIs', async () => {
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
   assert.equal(manifest.manifest_version, 3);
-  assert.deepEqual(manifest.permissions, ['activeTab', 'contentSettings', 'management', 'scripting', 'downloads', 'webNavigation']);
-  assert.equal(manifest.minimum_chrome_version, '92');
+  assert.deepEqual(manifest.permissions, ['activeTab', 'contentSettings', 'management', 'scripting', 'downloads', 'webNavigation', 'storage']);
+  assert.equal(manifest.minimum_chrome_version, '102');
   assert.deepEqual(manifest.background, { service_worker: 'src/background/service-worker.js', type: 'module' });
-  for (const field of ['host_permissions', 'optional_permissions', 'optional_host_permissions', 'content_scripts', 'externally_connectable', 'web_accessible_resources']) {
+  for (const field of ['host_permissions', 'optional_permissions', 'content_scripts', 'externally_connectable', 'web_accessible_resources']) {
     assert.equal(manifest[field], undefined, field);
   }
-  assert.match(manifest.content_security_policy.extension_pages, /connect-src 'none'/);
+  assert.deepEqual(manifest.optional_host_permissions, ['https://www.virustotal.com/*']);
+  assert.deepEqual(manifest.options_ui, { page: 'src/options/options.html', open_in_tab: true });
+  assert.match(manifest.content_security_policy.extension_pages, /connect-src https:\/\/www\.virustotal\.com\/api\/v3\/domains\/;/);
   assert.match(manifest.content_security_policy.extension_pages, /form-action 'none'/);
   const html = await readFile(new URL(manifest.action.default_popup, root), 'utf8');
   assert.match(html, /type="module" src="popup.js"/);
@@ -32,15 +34,23 @@ test('manifest has only the six required permissions and blocks outgoing connect
   assert.match(auditHtml, /type="module" src="extensions.js"/);
 });
 
-test('shipped source has no network, persistence, analytics, unsafe HTML or secret APIs', async () => {
+test('shipped source isolates opt-in networking and key storage; other privacy guards remain', async () => {
   const files = [...await sourceFiles(new URL('src/', root)), ...await sourceFiles(new URL('data/', root))];
   // Static guardrail for this small, fully inspected source tree, not a general security scanner.
-  const forbidden = /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon|localStorage|sessionStorage|indexedDB|innerHTML|eval)\b|chrome\.(?:storage|history|webRequest|cookies)|document\.cookie|console\.|https?:\/\/|\b(?:analytics|telemetry|gtag|mixpanel|segment)\b/i;
+  const forbidden = /\b(?:XMLHttpRequest|WebSocket|EventSource|sendBeacon|localStorage|sessionStorage|indexedDB|innerHTML|eval)\b|\b(?:chrome|chromeApi)\.(?:history|webRequest|cookies)|document\.cookie|console\.|\bstorage\.sync\b|\b(?:analytics|telemetry|gtag|mixpanel|segment)\b/i;
   const mutations = /\b(?:setEnabled|uninstall|uninstallSelf|launchApp|createAppShortcut|generateAppForLink|setLaunchType|installReplacementWebApp)\s*\(|\bmanagement\s*\[|\bon(?:Installed|Enabled|Disabled|Uninstalled)\b/;
   const secret = /-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:sk-[a-zA-Z0-9_-]{16,}|gh[pousr]_[a-zA-Z0-9]{16,}|github_pat_[a-zA-Z0-9_]{16,})|\b(?:api[_-]?key|client[_-]?secret)\s*[:=]|\b[a-f0-9]{64}\b/i;
   for (const file of files) {
     const source = await readFile(file, 'utf8');
     assert.doesNotMatch(source, forbidden, file.pathname);
+    const name = file.pathname.slice(root.pathname.length);
+    if (name !== 'src/reputation/virustotal-client.js') assert.doesNotMatch(source, /\bfetch\b/, name);
+    if (!['src/reputation/key-store.js', 'src/reputation/reputation-worker.js'].includes(name)) {
+      assert.doesNotMatch(source, /\b(?:chrome|chromeApi)\.storage\b/, name);
+    }
+    if (!['src/reputation/domain-rules.js', 'src/reputation/virustotal-client.js', 'src/options/options.html'].includes(name)) {
+      assert.doesNotMatch(source, /https?:\/\//, name);
+    }
     assert.doesNotMatch(source, mutations, file.pathname);
     assert.doesNotMatch(source, secret, file.pathname);
   }
