@@ -1,0 +1,34 @@
+.DS_Store
+node_modules/
+coverage/
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+.npmrc
+.pypirc
+.netrc
+.git-credentials
+.credentials
+.ssh/
+.aws/
+credentials.json
+credentials.*.json
+secrets.json
+secrets.*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.token
+
+# Local development artifacts
+*.log
+*.sqlite
+*.sqlite3
+*.db
+/work/
+/outputs/
