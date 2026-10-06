@@ -1,3 +1,28 @@
+# Milestone 6 verification
+
+Verified October 7, 2026 against published download baseline `3662f3c05c362cadfedab299c9bcbd71eed85e6a`.
+
+## Automated and privacy checks
+
+- **186 tests passed, 0 failed**: all 147 baseline tests remain plus 39 navigation tests. Coverage includes each qualifier, both redirect types, conservative benign/login/local cases, visible URL review combinations, unavailable/malformed events/replies, subframe exclusion, private-tab rejection before URL inspection, one-document replacement, tab/window/document matching, closure/focus/activation/replacement/start cleanup, expiry, worker recreation, delayed callbacks, whitelist responses, popup clearing and slow setting-read expiry, and source/manifest boundaries.
+- Syntax checks passed for **40 JavaScript files**; JSON parsing, relative imports, bundled HTML assets, version consistency and exact permissions passed. Manifest is activeTab, contentSettings, management, scripting, downloads, webNavigation; minimum remains Chrome 92. No history, webRequest, tabs, host or storage permission was added.
+- Only top-level committed/start events and basic tab/window cleanup events are used. A focused active regular-tab query gates URL inspection; getFrame reads only the requested current top-level frame to verify its document/origin. API-proxy tests reject unrelated navigation/tab methods. No startup reads, chain reconstruction or background-tab inventory exists.
+- One origin/qualifier snapshot stays in worker memory for at most five minutes, with internal IDs/deadline solely for correlation/expiry. New navigation, tab/window changes, closure/replacement, expiry, reload and worker shutdown discard it. Popup text clears on pagehide/expiry; late replies cannot revive closed/expired or different-document data. URL paths, queries, fragments, credentials, previous URLs and Chrome event timestamps are never retained.
+- Source scans found no outgoing request APIs, persistence, browser history/request monitoring, telemetry/logging, polling/alarms, management/download mutations or file reads/hashing. Secret scan covers all tracked/new files for VirusTotal-style keys, tokens, real passwords, private keys and local credential files; eight existing/new synthetic credential/query markers and three structural Boolean field flags were reviewed.
+- Redirect alone never creates Review or High Attention. Existing final-URL Review signals receive separate navigation context; existing URL High Attention rules are preserved. Missing navigation data is explicitly unavailable, never proof of no redirect.
+
+## Preview and remaining browser checks
+
+The actual popup, worker adapters, reader and advisor were exercised on loopback under the manifest CSP with synthetic Chrome events/messaging. Confirmed initial unavailable state, no qualifier with address-bar initiation, server-only/client-only/both redirects, Back/Forward, Review with a synthetic brand mismatch, expanded guidance, and clearing back to unavailable. No preview console errors appeared. The screenshot/harness are outside the repository; the temporary tab and server were closed.
+
+This was not a real MV3 event/lifecycle test. Actual Chrome permission acceptance, qualifier delivery (including HSTS/HTTPS-first/BFCache differences), document IDs, active-window/private handling, suspension and Network/Storage inspection remain in [the manual checklist](manual-testing.md). Harmless loopback fixtures support direct and same-site client/server redirects without visiting deceptive domains. No full redirect chain or expected domain is claimed.
+
+## Git scope
+
+Milestone 6 is a separate commit after `3662f3c`, with message `feat: add local redirect awareness`. Publication uses a normal push to origin/main, never force push. No later milestone, VirusTotal, traffic recorder, history database, backend or persistent storage is included.
+
+---
+
 # Milestone 5 verification
 
 Verified October 7, 2026 against published Milestone 4 commit `e1416c259a9d47591e679133149d2a79233b1b58`.

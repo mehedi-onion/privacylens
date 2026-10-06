@@ -2,7 +2,7 @@
 
 **Understand what websites and browser extensions can access before you trust them.**
 
-PrivacyLens is an early privacy-oriented browser extension prototype. **Milestone 5** analyzes the current URL locally, reads current-site content settings where Chrome allows it, audits installed-extension permissions, scans current-page structure only when you ask, and explains the latest temporarily observed download event. All explanations are local. It does not maintain browsing history, save an extension inventory, store page scans, or keep a download history.
+PrivacyLens is an early privacy-oriented browser extension prototype. **Milestone 6** analyzes the current URL locally, reads current-site content settings where Chrome allows it, audits installed-extension permissions, scans current-page structure only when you ask, explains the latest temporarily observed download event, and shows Chrome-reported redirect/navigation qualifiers for the current tab. All explanations are local. It does not maintain browsing/navigation history, save an extension inventory, store page scans, or keep a download history.
 
 **See → Understand → Decide → Forget.**
 
@@ -19,8 +19,9 @@ It analyzes signals, not intent. A warning means **“review this”**, not **�
 7. Click **Review browser extensions** to open the separate extension audit. Expand an extension for its permissions, explanations, and Chrome warnings. Search by name or filter by review label locally.
 8. Click **Scan this page** to inspect the current top-level page’s structural metadata. Expand a finding for its reason and suggestion. Closing the popup discards this page scan.
 9. After downloading a file, open the popup promptly and inspect **Recent download check**. Use **Check recent download** for a fresh read of the current temporary record.
+10. After navigating in the focused active tab, open the popup promptly and inspect **Navigation**. Expand a reported qualifier for its explanation. Missing data is explicitly unavailable.
 
-No installation command, build step, packages, or account are required. Reload when upgrading and accept added permissions if Chrome prompts. Milestone 5 adds `downloads`; Milestone 4’s function-injection API still requires Chrome 92. The existing `management` permission may say it can manage apps, extensions, and themes because it includes mutation capabilities. PrivacyLens deliberately uses only its read APIs. The existing `contentSettings` permission also bundles reading and writing; this code only reads settings.
+No installation command, build step, packages, or account are required. Reload when upgrading and accept added permissions if Chrome prompts. Milestone 6 adds `webNavigation`; Milestone 4’s function-injection API still requires Chrome 92. The existing `management` permission may say it can manage apps, extensions, and themes because it includes mutation capabilities. PrivacyLens deliberately uses only its read APIs. The existing `contentSettings` permission also bundles reading and writing; this code only reads settings.
 
 ## What it shows
 
@@ -71,12 +72,13 @@ The audit label is separate from the current website's status. Chrome warnings a
 | `management` | Read other installed extensions and their permission warnings for the audit. No narrower read-only permission exposes this inventory. | This implementation does not disable, uninstall, launch, change extensions, or modify permissions. The permission itself also permits management actions, so read-only behavior is a code boundary. |
 | `scripting` | Run one bundled, read-only DOM collector in the active tab’s top frame after **Scan this page**. It works with temporary `activeTab` access; no persistent host permissions are needed. | This implementation does not modify pages, submit forms, read field values, inspect frame documents, inject CSS, register persistent scripts, or monitor page changes. The permission can support changes in other code; read-only behavior is enforced here. |
 | `downloads` | Observe Chrome download events and read metadata only for the ID in a relevant change event. No narrower permission supplies these events. | This code never initiates, cancels, pauses, resumes, opens, reveals, deletes, accepts danger, or changes download UI. The permission also grants broader management/history access, so read-only behavior is enforced in code. No `downloads.open`, `downloads.shelf`, or `downloads.ui` permission is requested. |
+| `webNavigation` | Read top-level committed qualifiers and verify the current frame/document for the popup. This is the minimum permission for these signals; no host grants are needed. | It does not expose a complete redirect chain. PrivacyLens does not reconstruct history, collect earlier URLs, inspect traffic, change navigation, or retain background-tab records. Its broader capability is restricted by this code. |
 
 There is no read-only variant of `contentSettings`; do not interpret this manifest permission as technically incapable of changing settings. Read-only behavior is enforced by the implementation and verified with mocked setter methods that must never be called.
 
 The audit adapter calls only `getAll()` and `getPermissionWarningsById()`. Management mutations are forbidden: `setEnabled`, `uninstall`, `uninstallSelf`, `launchApp`, `createAppShortcut`, `generateAppForLink`, `setLaunchType`, and `installReplacementWebApp`. There are no extension-event listeners, polling, or background monitoring. Mock tests reject any management method outside the two read calls.
 
-References: [management](https://developer.chrome.com/docs/extensions/reference/api/management), [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns), [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [contentSettings](https://developer.chrome.com/docs/extensions/reference/api/contentSettings), [scripting](https://developer.chrome.com/docs/extensions/reference/api/scripting), [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts), [downloads](https://developer.chrome.com/docs/extensions/reference/api/downloads).
+References: [management](https://developer.chrome.com/docs/extensions/reference/api/management), [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns), [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [contentSettings](https://developer.chrome.com/docs/extensions/reference/api/contentSettings), [scripting](https://developer.chrome.com/docs/extensions/reference/api/scripting), [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts), [downloads](https://developer.chrome.com/docs/extensions/reference/api/downloads), [webNavigation](https://developer.chrome.com/docs/extensions/reference/api/webNavigation).
 
 ## On-demand page scan
 
@@ -103,7 +105,7 @@ The snapshot processes at most 50 forms, 100 controls per form, 400 inputs, 400 
 
 **PrivacyLens observes download metadata only to explain the current event. It does not keep a download history.** Chrome’s download history remains Chrome’s own record; PrivacyLens does not list or copy it.
 
-A minimal module service worker listens synchronously for `downloads.onCreated`, relevant `onChanged` deltas (danger, filename, source/final URL, MIME, size, paused, state), and `onErased` to discard an erased record. Creation supplies metadata directly. A relevant change performs only `downloads.search({ id })` for that event ID, allowing a new worker to recover the current event without a stored ID list. There are no startup/history-list searches, polling, keep-alive ports, browsing listeners, or notifications. Chrome’s metadata search can cause Chrome itself to refresh file-existence metadata; PrivacyLens does not inspect file contents.
+A minimal module service worker listens synchronously for `downloads.onCreated`, relevant `onChanged` deltas (danger, filename, source/final URL, MIME, size, paused, state), and `onErased` to discard an erased record. Creation supplies metadata directly. A relevant change performs only `downloads.search({ id })` for that event ID, allowing a new worker to recover the current event without a stored ID list. There are no startup/history-list searches, polling, keep-alive ports, or download notifications. Chrome’s metadata search can cause Chrome itself to refresh file-existence metadata; PrivacyLens does not inspect file contents.
 
 Only **one** sanitized record is held in worker memory: basename, source origins/domains, browser danger/status/type/size, filename flags, and an internal ID for matching erasure. Full paths, URL credentials/paths/queries/fragments, referrers, start/end times, hashes, and unneeded fields are discarded. Incognito items are rejected before filenames and sources are read or retained. The download UI also declines reads in incognito or unknown tab contexts.
 
@@ -124,14 +126,26 @@ Each accepted event replaces the record and starts a single five-minute cleanup 
 
 Download status is separate from website/page/extension status. Transfer state, paused state, reported MIME and size are descriptive; completion and a MIME label do not establish safety. `fileSize = -1` or invalid/missing size appears as Unknown. Non-HTTP sources or malformed addresses limit domain comparisons. The scanner cannot know whether you trust or expected a source, determine OS file associations, inspect archive contents, or confirm a file’s real type. It never reads bytes, hashes, uploads, opens files, overrides warnings, or makes an antivirus/malware claim. Use only harmless fixtures for [manual testing](docs/manual-testing.md).
 
+## Current-tab redirect awareness
+
+The **Navigation** section shows Chrome's `onCommitted` qualifiers: server redirects (HTTP headers), client redirects (scripts/refresh instructions), Back/Forward, and address-bar initiation. Both redirect types are shown separately if both are reported. An observed navigation with no redirect qualifier is labeled **No redirect qualifier reported**, not a guaranteed direct route. Missing data is **Unavailable**, never an invented normal navigation.
+
+Redirects are common for sign-in, HTTPS upgrades and moved pages. A redirect alone stays **Normal**. If the final URL already has Review findings, the navigation section adds a visible **Review** explanation referencing those same findings. It does not infer what the user expected, compare an unknown previous domain, manufacture hop counts, or create High Attention by itself. Existing strong URL combinations keep their existing High Attention label.
+
+`webNavigation` supplies the final committed URL and qualifiers, not a complete ordered redirect chain. PrivacyLens does not reconstruct earlier URLs using history, request monitoring or more navigation events. It retains only the final origin/domain/scheme, transition type/qualifiers and internal tab/window/document identifiers. Credentials, paths, queries, fragments, event timestamps and earlier destinations are discarded. IDs are never shown or returned to the popup.
+
+Only **one focused active regular tab's current top-level document** is retained in worker memory, for at most five minutes. Background tabs and subframes are not retained; incognito/unknown tabs are skipped before inspecting event URLs. A new document replaces the snapshot. Navigation start, tab activation, window focus change, tab closure/replacement, expiry, worker shutdown and extension reload discard it. Switching away and back can therefore produce Unavailable until a new navigation is observed. There is no per-tab inventory, timeline, startup/backfill query or persistent storage.
+
+Opening the popup makes one local read. The worker verifies the active tab and its current top-level frame using `getFrame({tabId, frameId: 0})`; Chrome 106+ document IDs prevent stale document matches. Older Chrome uses origin matching plus observed navigation-start/commit cleanup, which cannot distinguish documents as precisely. The current URL analysis remains the popup's existing activeTab read. Same-document path/fragment changes retain the initial committed qualifiers when the document still matches. The popup clears on closing/expiry. Idle worker suspension can discard the snapshot after about 30 seconds; open promptly and accept Unavailable rather than treating it as no redirect.
+
 ## Privacy
 
-All URL analysis, setting reads, extension auditing, page scans, and download metadata explanations happen locally. Chrome itself stores its existing site settings; **PrivacyLens only reads them**.
+All URL analysis, setting reads, extension auditing, page scans, navigation and download metadata explanations happen locally. Chrome itself stores its existing site settings; **PrivacyLens only reads them**.
 
 - No persistent host patterns, `tabs`, storage, history, or network-monitoring permissions.
-- One minimal event-driven download worker; no browsing monitoring, automatic/persistent content script, server/backend, account, analytics, AI API, CDN, API keys, or secrets. The only page injection is the one-shot collector after your click.
+- One minimal event-driven worker for a download event and a current navigation snapshot; no traffic recording, automatic/persistent content script, server/backend, account, analytics, AI API, CDN, API keys, or secrets. The only page injection is the one-shot collector after your click.
 - No outgoing network requests. `connect-src 'none'` applies to all extension pages; scripts/styles/data are bundled locally.
-- No saved domains, permission states, findings, timestamps, installed-extension names, IDs, permissions, host access, inventories, or history. No visited URLs or settings are transmitted.
+- No persistent domains, permission states, findings, timestamps, installed-extension names, IDs, permissions, host access, inventories, or history. No visited URLs or settings are transmitted.
 - The site-setting reader sends only the origin to the browser's local API; it drops credentials, paths, query values, and fragments. No raw addresses or API errors are logged.
 - Website/page scan data exists only in popup memory and rendered text. Closing it discards the scan, clears its display, and prevents pending reads from repainting it. Reopening performs a fresh check.
 
@@ -147,7 +161,7 @@ Use Node.js 22 or newer from this folder:
 node --test
 ```
 
-If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, download danger/filename/source rules, incognito filtering, event-only ID lookups, expiry, worker recreation, local messaging, and source privacy guardrails.
+If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, download danger/filename/source rules, incognito filtering, event-only ID lookups, expiry, worker recreation, navigation qualifiers/document matching/tab cleanup, local messaging, and source privacy guardrails.
 
 ## Files to learn
 
@@ -163,13 +177,17 @@ src/analysis/risk-model.js                 URL label rules
 src/permissions/site-permission-reader.js  Chrome content-settings adapter
 src/permissions/permission-definitions.js  Explanation text and supported states
 src/permissions/permission-advisor.js      Conservative advice/status integration
-src/background/service-worker.js          Download-only event registration and local message access
+src/background/service-worker.js          Download/current-navigation events and local message access
 src/downloads/danger-definitions.js        Documented Chrome classifications and fallbacks
 src/downloads/filename-rules.js            Explainable basename heuristics
 src/downloads/download-analyzer.js         Whitelist/sanitization and local download advice
 src/downloads/download-observer.js         One temporary event and read-only browser adapter
 src/downloads/download-controller.js       Popup read, expiry and closure
 src/downloads/download-view.js             Calm text-only download explanation
+src/navigation/navigation-observer.js     One current navigation and browser/document adapter
+src/navigation/navigation-reader.js       Local popup read and reply validation
+src/navigation/navigation-advisor.js      Qualifier normalization and conservative URL context
+src/navigation/navigation-view.js         Text-only navigation explanations
 src/page/page-collector.js                 One-shot structural DOM collection
 src/page/page-reader.js                    Chrome injection adapter
 src/page/page-analyzer.js                  Local page rules and aggregate findings
@@ -188,6 +206,8 @@ tests/                                    Offline tests
 docs/rules.md                             URL thresholds and limitations
 docs/platform-limits.md                    API evidence and scope
 docs/manual-testing.md                    Personal Chrome checks
+docs/fixtures/navigation-direct.html      Local direct/server-redirect entry points
+docs/fixtures/navigation-client.html      Harmless same-site refresh redirect
 docs/fixtures/page-scan.html               Local structural test page
 docs/fixtures/downloads.html               Harmless download test links
 docs/fixtures/download-sample.pdf          Simple harmless PDF
@@ -195,10 +215,10 @@ docs/fixtures/download-sample.txt          Plain-text naming fixture
 docs/verification.md                      Verification record
 ```
 
-Chrome API access stays separate from explanation and analysis logic. The background worker observes only the documented download events; all other features keep their existing on-demand behavior.
+Chrome API access stays separate from explanation and analysis logic. The background worker handles only the documented download events and minimum navigation/cleanup events; other features keep their existing on-demand behavior.
 
 ## Scope and limitations
 
-Milestone 5 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirect chains, file contents, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, VirusTotal, fuzzy matching, or offensive security features.
+Milestone 6 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirect chains, file contents, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, VirusTotal, fuzzy matching, or offensive security features.
 
 The URL reference lists remain deliberately small. Permission settings are top-level-site snapshots; inherited defaults, one-time grants, OS rules, embedded frames, and Chromium derivatives can limit what the API tells us. Missing data is shown honestly as Unavailable. See [platform limits](docs/platform-limits.md) and [manual testing](docs/manual-testing.md).

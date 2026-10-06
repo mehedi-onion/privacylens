@@ -1,3 +1,34 @@
+# Milestone 6 platform check
+
+Checked **before coding** on October 7, 2026 against official [webNavigation](https://developer.chrome.com/docs/extensions/reference/api/webNavigation), [worker events](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/events), [worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle), [tabs](https://developer.chrome.com/docs/extensions/reference/api/tabs), [windows](https://developer.chrome.com/docs/extensions/reference/api/windows), and [runtime messaging](https://developer.chrome.com/docs/extensions/reference/api/runtime) documentation.
+
+## Minimum access and actual signals
+
+Only **webNavigation** is added. Its events/read methods require that permission; no host grants, webRequest, history, tabs, or storage permission is necessary. Basic tab ID/active/incognito/window fields, tab cleanup events and window focus events do not require the tabs permission. The existing activeTab grant supplies the popup's current URL. Exact manifest permissions are activeTab, contentSettings, management, scripting, downloads, webNavigation.
+
+`onCommitted` reports frameId, tabId, final URL, transitionType and transitionQualifiers. frameId **0** is the top-level frame. The documented qualifiers (Chrome 44+) are:
+
+| Qualifier | Documented meaning |
+| --- | --- |
+| server_redirect | One or more redirects caused by HTTP headers from the server. |
+| client_redirect | One or more redirects caused by JavaScript or page refresh tags. |
+| forward_back | The user initiated navigation with Back or Forward. |
+| from_address_bar | Navigation began from the address bar. |
+
+The event does **not** contain an ordered chain, previous redirect URLs, hop count or expected domain. PrivacyLens deliberately does not reconstruct those. A missing snapshot differs from an observed event with an empty qualifier list. Neither establishes site safety. Transition type is normalized internally; the UI only explains the useful qualifiers, not technical enum/IDs.
+
+`documentId`, documentLifecycle and frameType are Chrome **106+**. A document ID changes on a new document and remains stable across its lifecycle. These are optional here; minimum Chrome remains **92** for the existing page scanner. On 106+, the popup read verifies the current document ID. On older Chrome, it verifies origin and relies on navigation-start/commit invalidation; this is less precise. `getFrame` uses its callback form because Promise support starts at Chrome 93. Callback errors are consumed without logging raw URLs/errors. Incognito/unknown contexts, restricted/non-HTTP(S) pages and non-active lifecycle documents are unavailable.
+
+## Event/lifecycle and privacy boundary
+
+The module worker registers listeners synchronously during initial script execution: top-level onCommitted plus onBeforeNavigate for invalidation; tabs.onRemoved/onActivated/onReplaced and windows.onFocusChanged for cleanup. It does not subscribe to subframe-specific analysis, onHistoryStateUpdated, traffic events or browser history. An event's basic tab/frame IDs are inspected first; a query of only the focused active tab checks regular scope before URL normalization. The full event URL exists only during that local callback and is reduced to its origin. Event timestamps are never inspected or retained.
+
+One current snapshot contains origin/domain/scheme, type/qualifiers and internal tab/window/document correlation. It is replaced or cleared, never appended. One five-minute deadline/timer bounds memory lifetime; these internal expiry values are not Chrome navigation timestamps or a log. There are no startup scans, backfill, per-tab lists, polling, keep-alive ports, alarms, storage or outgoing communication. Finite popup messages read only this memory after tab/frame validation.
+
+Chrome normally stops an idle worker after about **30 seconds**, losing globals. A later event wakes a fresh worker with no earlier snapshot. PrivacyLens deliberately chooses Unavailable instead of storage or reconstructing history. Background-tab navigations are ignored, switching tabs/windows clears the snapshot, and prerender/tab replacement can leave no observed active commit. Same-document URL changes can keep the initial qualifiers if the same document/origin still matches. Chrome's internal upgrades, BFCache and Chromium derivatives may affect reported signals; no complete redirect coverage is promised.
+
+---
+
 # Milestone 5 platform check
 
 Checked before implementation on October 7, 2026 against official [downloads](https://developer.chrome.com/docs/extensions/reference/api/downloads), [worker events](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/events), [worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle), [module workers](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/basics), [runtime messaging](https://developer.chrome.com/docs/extensions/reference/api/runtime), and [incognito](https://developer.chrome.com/docs/extensions/reference/manifest/incognito) documentation.

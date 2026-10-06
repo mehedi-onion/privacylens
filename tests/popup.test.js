@@ -13,7 +13,7 @@ class Element {
 }
 function documentFixture() {
   const elements = new Map(['domain', 'scheme', 'status', 'summary', 'findings', 'result',
-    'permissions-context', 'permission-notes', 'site-permissions'].map(id => [id, new Element()]));
+    'permissions-context', 'permission-notes', 'site-permissions', 'navigation-findings'].map(id => [id, new Element()]));
   return {
     getElementById: id => elements.get(id),
     createElement: tag => new Element(tag),
