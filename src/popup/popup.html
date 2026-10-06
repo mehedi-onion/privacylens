@@ -4,75 +4,73 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PrivacyLens</title>
+  <link rel="stylesheet" href="../ui/brand.css">
   <link rel="stylesheet" href="popup.css">
   <script type="module" src="popup.js"></script>
 </head>
 <body>
-  <header><h1>PrivacyLens</h1><p>See → Understand → Decide → Forget.</p></header>
+  <header><h1><img class="brand-logo" src="../../assets/logo.png" alt="PrivacyLens" width="180" height="42"></h1></header>
   <main id="result" aria-busy="true">
-    <section aria-label="Current website assessment">
+    <section class="overview" aria-label="Current website assessment">
       <h2 id="domain">Reading this tab…</h2>
-      <p id="scheme"></p>
       <p id="status" class="status" role="status" aria-describedby="summary overview-scope" hidden></p>
       <p id="summary"></p>
-      <p class="permission-context" id="overview-scope">Page scans and downloads have separate labels below.</p>
     </section>
-    <details class="privacy-summary" id="privacy-summary">
-      <summary>Privacy of this scan<span id="privacy-overview">Local checks · reading details…</span></summary>
-      <h3>Local checks</h3><ul id="privacy-local"></ul>
-      <h3>External checks</h3><p id="privacy-external" role="status">No external lookup requested.</p>
-      <h3>Stored by PrivacyLens</h3><ul id="privacy-stored"></ul>
-      <p class="permission-context">Closing this popup discards its results. One current download/navigation snapshot may remain briefly in worker memory, never in a history database.</p>
-    </details>
     <details class="evidence-section" id="address-section">
-      <summary><h2>Website address<span class="source-label">LOCAL</span><span id="address-state" class="section-state">— Checking…</span></h2></summary>
+      <summary><h2>Website<span id="address-state" class="section-state">— Checking…</span></h2></summary>
+      <p id="scheme" class="context"></p>
       <div id="findings"></div>
     </details>
     <details class="evidence-section" id="permissions-section">
-      <summary><h2>Site permissions<span class="source-label">LOCAL</span><span id="permissions-state" class="section-state">— Checking…</span></h2></summary>
-      <p class="permission-context" id="permissions-context">Reading browser settings…</p>
+      <summary><h2>Permissions<span id="permissions-state" class="section-state">— Checking…</span></h2></summary>
+      <p class="context" id="permissions-context">Reading browser settings…</p>
       <div id="permission-notes"></div><div id="site-permissions"></div>
     </details>
     <details class="evidence-section" id="page-section">
-      <summary><h2>Page scan<span class="source-label">LOCAL</span><span id="page-state" class="section-state">— Not checked</span></h2></summary>
+      <summary><h2>Page<span id="page-state" class="section-state">— Not checked</span></h2></summary>
       <section id="page-scan" aria-label="On-demand page scan" aria-busy="false">
         <button id="scan-page" type="button">Scan this page</button>
-        <p class="permission-context">Scans this page only when you ask. Form values are never read or saved.</p>
-        <p class="status" id="page-scan-status" role="status" hidden></p>
+        <p class="context">Only when you ask. Form values are never read.</p>
+        <p class="sr-only" id="page-scan-status" role="status" hidden></p>
         <p id="page-scan-summary" role="status">No page scan yet.</p>
         <div id="page-scan-findings"></div>
-        <p class="permission-context">Close this popup to clear the page scan.</p>
       </section>
     </details>
     <details class="evidence-section" id="navigation-section">
-      <summary><h2>Navigation<span class="source-label">LOCAL</span><span id="navigation-state" class="section-state">— Checking…</span></h2></summary>
+      <summary><h2>Navigation<span id="navigation-state" class="section-state">— Checking…</span></h2></summary>
       <div id="navigation-findings"></div>
-      <p class="permission-context">For this tab only. Chrome does not show the full redirect chain here, and PrivacyLens saves no navigation history.</p>
+      <p class="context">Chrome does not show the full redirect chain here.</p>
     </details>
     <details class="evidence-section" id="download-section">
-      <summary><h2>Recent download<span class="source-label">LOCAL</span><span id="download-state" class="section-state">— Checking…</span></h2></summary>
-      <div id="download-check" role="status">No recent PrivacyLens-observed download.</div>
-      <button id="read-download" type="button">Check recent download</button>
-      <p class="permission-context">Only file details are read, never the file itself. One download may stay in memory for up to five minutes. No download history is saved.</p>
+      <summary><h2>Download<span id="download-state" class="section-state">— Checking…</span></h2></summary>
+      <div id="download-check" role="status">No recent download.</div>
+      <button id="read-download" type="button">Check again</button>
+      <p class="context">File details only. The file itself is never read.</p>
     </details>
     <details class="evidence-section" id="reputation-section">
-      <summary><h2>VirusTotal (optional)<span class="source-label">EXTERNAL · USER REQUESTED</span><span id="reputation-state" class="section-state">— Not checked</span></h2></summary>
-      <button id="vt-check" type="button">Check reputation with VirusTotal</button>
-      <p class="permission-context">Optional. Local checks work without VirusTotal.</p>
+      <summary><h2>Reputation<span id="reputation-state" class="section-state">— Not checked</span></h2></summary>
+      <p class="source-label">EXTERNAL · USER REQUESTED</p>
+      <button id="vt-check" type="button">Check with VirusTotal</button>
       <div id="vt-consent" hidden>
-        <p>This sends the hostname below to VirusTotal. PrivacyLens never checks it automatically.</p>
-        <p>Selected hostname: <strong id="vt-hostname"></strong></p>
-        <p class="permission-context">Your API key is sent for authentication. URL paths, queries and fragments are left out. VirusTotal may scan the hostname and add it to its shared dataset. Avoid confidential or personal hostnames.</p>
-        <button id="vt-confirm" type="button">Confirm hostname lookup</button><button id="vt-cancel" type="button">Cancel</button>
+        <p>Checks <strong id="vt-hostname"></strong> with VirusTotal.</p>
+        <p class="context">Sends this hostname and your API key after confirmation. No URL path, query or fragment. VirusTotal may keep or share the hostname; avoid confidential names.</p>
+        <button id="vt-confirm" type="button">Confirm lookup</button><button id="vt-cancel" type="button">Cancel</button>
       </div>
       <div id="vt-result" role="status"></div>
-      <a href="../options/options.html" target="_blank" rel="noopener">VirusTotal settings</a>
+      <a class="secondary-link" href="../options/options.html" target="_blank" rel="noopener">VirusTotal settings</a>
+    </details>
+    <details class="privacy-summary" id="privacy-summary">
+      <summary>Privacy<span id="privacy-overview">✓ Local checks only · no results saved</span></summary>
+      <h3>Local checks</h3><ul id="privacy-local"></ul>
+      <h3>External checks</h3><p id="privacy-external" role="status">No external lookup requested.</p>
+      <h3>Stored by PrivacyLens</h3><ul id="privacy-stored"></ul>
+      <p class="context" id="overview-scope">The top status combines the address, permissions, navigation and any VirusTotal report. Page and download checks have separate labels.</p>
+      <p class="context">Closing this popup clears its results. One download or navigation record may remain briefly in memory. No history is saved.</p>
     </details>
   </main>
   <nav aria-label="PrivacyLens tools">
     <a class="audit-link" href="../extensions/extensions.html" target="_blank" rel="noopener">Review browser extensions</a>
-    <a class="transparency-link" href="../transparency/transparency.html" target="_blank" rel="noopener">Audit PrivacyLens · transparency</a>
+    <a class="secondary-link" href="../transparency/transparency.html" target="_blank" rel="noopener">About &amp; privacy</a>
   </nav>
-  <footer><p>This shows what a site or extension can access, not what it will do.</p></footer>
 </body>
 </html>

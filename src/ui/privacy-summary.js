@@ -4,13 +4,18 @@ export const localFeatures = { address: 'Website address', permissions: 'Site pe
   navigation: 'Navigation', download: 'Recent download' };
 export function initialPrivacyState() {
   return { local: Object.fromEntries(Object.keys(localFeatures).map(id => [id, { checked: false }])),
-    external: 'none', pending: false, keyMode: 'unknown' };
+    external: 'none', pending: false, keyMode: 'unknown', hostname: null, pendingHostname: null };
 }
 export function updateExternal(state, event) {
   if (event.keyMode) state.keyMode = ['none', 'session', 'remembered'].includes(event.keyMode) ? event.keyMode : 'unknown';
-  if (event.phase === 'pending') state.pending = true;
+  if (event.phase === 'pending') {
+    state.pending = true;
+    state.pendingHostname = typeof event.hostname === 'string' && /^[a-z0-9.-]{1,253}$/.test(event.hostname) ? event.hostname : null;
+  }
   if (event.phase === 'complete' || event.phase === 'cancel') {
     const transmission = event.phase === 'cancel' && state.pending ? 'possible' : event.transmission;
+    if ((transmission === 'shared' || transmission === 'possible' && state.external !== 'shared') && state.pendingHostname) state.hostname = state.pendingHostname;
+    state.pendingHostname = null;
     if (transmission === 'shared') state.external = 'shared';
     else if (transmission === 'possible' && state.external !== 'shared') state.external = 'possible';
     state.pending = false;
@@ -28,9 +33,9 @@ export function privacySummary(state) {
   return { local: Object.entries(localFeatures).map(([id, label]) => `${label}: ${evidenceLabel(state.local[id])}`),
     external, stored: ['No browsing history saved.', 'No scan result saved.', key,
       'Anonymous request counters may remain in browser-session memory; no hostname or report is in them.'],
-    overview: state.external === 'shared' ? 'Hostname shared with VirusTotal · no result saved' :
-      state.external === 'possible' || state.pending ? 'External request may have shared a hostname · no result saved' :
-        'Local checks · no external lookup sent' };
+    overview: state.external === 'shared' ? `VirusTotal · shared: ${state.hostname ?? 'hostname'} · no results saved` :
+      state.external === 'possible' || state.pending ? `VirusTotal · may have shared: ${state.pendingHostname ?? state.hostname ?? 'hostname'} · no results saved` :
+        '✓ Local checks only · no results saved' };
 }
 export function renderPrivacySummary(document, state) {
   const model = privacySummary(state);

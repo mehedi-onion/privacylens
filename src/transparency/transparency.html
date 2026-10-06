@@ -3,34 +3,49 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PrivacyLens transparency</title>
+  <link rel="stylesheet" href="../ui/brand.css">
   <link rel="stylesheet" href="transparency.css"><script type="module" src="transparency.js"></script>
 </head>
 <body>
-  <header><p class="eyebrow">See → Understand → Decide → Forget.</p><h1>PrivacyLens transparency</h1>
-    <p>PrivacyLens can show what a site or extension is allowed to do, but it can’t know what it will actually do.</p></header>
+  <header><img class="brand-logo" src="../../assets/logo.png" alt="PrivacyLens" width="180" height="42"><h1>PrivacyLens transparency</h1>
+    <p>What PrivacyLens itself can access, and how it uses that access.</p></header>
   <main>
-    <nav aria-label="On this page"><a href="#audit-self">Audit PrivacyLens</a> · <a href="#access">Permissions</a> · <a href="#boundaries">Data boundaries</a> · <a href="#limits">Limitations</a></nav>
+    <nav aria-label="On this page"><a href="#audit-self">Audit PrivacyLens</a><a href="#access">Permissions</a><a href="#boundaries">Data</a><a href="#virustotal">VirusTotal &amp; key</a><a href="#limits">Limits</a></nav>
     <section id="audit-self" aria-labelledby="audit-heading"><h2 id="audit-heading">Audit PrivacyLens</h2>
-      <p>You should be able to question a privacy extension too. PrivacyLens asks for powerful permissions. Here is how it uses them, rather than giving itself a trust score.</p>
-      <p>To compare them with Chrome, open <strong>chrome://extensions</strong>, find PrivacyLens and choose <strong>Details</strong>. The extension cannot revoke or narrow Chrome’s bundled powers itself.</p>
-      <p>Local checks do not send data outside the browser. VirusTotal is optional and separately confirmed. No browsing history, scan result or extension inventory is saved.</p>
+      <p>A privacy extension deserves scrutiny too. PrivacyLens explains its access here rather than giving itself a trust score.</p>
+      <p>Compare this with <strong>chrome://extensions</strong> → <strong>PrivacyLens</strong> → <strong>Details</strong>. Chrome grants some permissions more power than PrivacyLens uses.</p>
+      <p>Most checks stay in your browser. VirusTotal is optional and needs your confirmation. No browsing history, scan results or extension inventory are saved.</p>
     </section>
-    <section id="access" aria-labelledby="access-heading"><h2 id="access-heading">Why each permission exists</h2>
-      <p>Chrome sometimes grants more access than PrivacyLens uses. Open a permission below to see the difference.</p><div id="permission-uses"></div>
+    <section id="access" aria-labelledby="access-heading"><h2 id="access-heading">Permissions</h2>
+      <p>Open a permission to see why it is needed and what PrivacyLens leaves alone.</p><div id="permission-uses"></div>
     </section>
     <section id="boundaries" aria-labelledby="boundaries-heading"><h2 id="boundaries-heading">Where data goes</h2>
-      <p>“Persisted” means kept after a browser restart or extension reload. Some temporary data lasts longer than the popup. One current download or navigation snapshot stays in memory for up to five minutes, often less if the background worker stops. The session key and request counters last until the browser restarts or the extension is reloaded, disabled or updated.</p>
       <div class="table-scroll" role="region" aria-label="Feature data boundaries" tabindex="0">
         <table><caption>PrivacyLens feature data boundaries</caption><thead><tr><th scope="col">Feature</th><th scope="col">Processed locally</th><th scope="col">Sent externally</th><th scope="col">Persisted</th></tr></thead><tbody id="boundary-rows"></tbody></table>
       </div>
-      <p>Your API key is sent to VirusTotal to authenticate a confirmed lookup. Remember saves only the key in your browser profile. PrivacyLens does not sync or encrypt it. Forget removes PrivacyLens’s copies; it does not revoke the key at VirusTotal.</p>
-      <p>VirusTotal may scan a hostname you check and add it to its shared dataset. Avoid confidential hostnames. A failed or cancelled request may already have sent the hostname and key. PrivacyLens keeps no reports and sends no full URLs, typed values, cookies, extension list or files.</p>
-      <p>Session quota counters contain only an anonymous day, count and two deadlines; no per-request log, hostname or report. Public API limits and account restrictions still apply.</p>
+      <details><summary>What “temporary” and “persisted” mean</summary>
+        <p>“Persisted” means kept after a browser restart or extension reload. Popup results clear when it closes.</p>
+        <p>One download or navigation record can stay in memory for up to five minutes, often less if Chrome stops the background process. Navigation also clears when the tab, window or document changes.</p>
+        <p>The session key and anonymous request counters last until the browser restarts or the extension is reloaded, disabled or updated. The counters contain four numbers: a day, a count and two deadlines. No request log, hostname or report.</p>
+      </details>
+    </section>
+    <section id="virustotal" aria-labelledby="virustotal-heading"><h2 id="virustotal-heading">VirusTotal and your key</h2>
+      <p>A confirmed lookup sends the hostname and your API key to VirusTotal over HTTPS. No full URL, typed values, page contents, cookies, extension list or files are sent.</p>
+      <p>VirusTotal may scan the hostname and add it to its shared dataset. Avoid confidential hostnames. A failed or cancelled request may already have sent the hostname and key. PrivacyLens saves no reports.</p>
+      <details><summary>How PrivacyLens uses this key</summary>
+        <p>Session only is the default. Remember saves only the key locally in your browser profile, without sync. PrivacyLens does not encrypt it as a secret vault; someone with profile access may recover it.</p>
+        <p>The saved key is never filled back into settings. Saving does not test it or send a request. Forget removes PrivacyLens’s copies; it does not revoke the key at VirusTotal.</p>
+        <p>The public API is for permitted personal/academic, non-commercial use, with 4 requests per minute and 500 per day. PrivacyLens spaces requests and respects quota errors. Account restrictions and other clients still apply.</p>
+        <p><a href="https://docs.virustotal.com/reference/public-vs-premium-api" target="_blank" rel="noopener noreferrer">VirusTotal API limits and restrictions</a> · <a href="https://docs.virustotal.com/reference/domain-info" target="_blank" rel="noopener noreferrer">Domain lookup and privacy notice</a></p>
+      </details>
+      <p><a href="../options/options.html">VirusTotal settings</a></p>
     </section>
     <section id="limits" aria-labelledby="limits-heading"><h2 id="limits-heading">What PrivacyLens cannot know</h2>
-      <p>These checks cannot tell you for certain:</p><ul id="limitation-list"></ul>
-      <p>Normal means nothing in these checks needs attention right now. Review and High Attention point to things worth checking, not a verdict about the site.</p>
+      <p>PrivacyLens can show what a site or extension is allowed to do, but it can’t know what it will actually do.</p>
+      <ul id="limitation-list"></ul>
+      <p><strong>Normal:</strong> Nothing here needs your attention right now. <strong>Review:</strong> There’s something worth checking. <strong>High Attention:</strong> Several strong signals are worth checking carefully.</p>
+      <p>These checks cannot prove a site is safe. The top popup status combines the address, site settings, navigation and any requested reputation report. Page scans and downloads keep their own labels.</p>
     </section>
-  </main><footer><a href="../options/options.html">VirusTotal settings</a><p>No account, analytics, remote logging, cloud sync or scan-history database.</p></footer>
+  </main><footer><p>See → Understand → Decide → Forget.</p><p>No account, analytics, remote logging, cloud sync or scan-history database.</p></footer>
 </body>
 </html>

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
-import { statusCopy, normalCaveat, evidenceLabel, evidenceSources } from '../src/ui/status-copy.js';
+import { statusCopy, evidenceLabel } from '../src/ui/status-copy.js';
 import { initialPrivacyState, updateExternal, privacySummary, createPrivacyPresenter } from '../src/ui/privacy-summary.js';
 import { permissionUses, dataBoundaries, limitations } from '../src/transparency/transparency-data.js';
 import { renderTransparency } from '../src/transparency/transparency.js';
@@ -19,23 +19,25 @@ const report = normalizeReport({ data: { type: 'domain', id: 'google.com', attri
 
 for (const [label, wording] of [
   ['Normal', 'Nothing here needs your attention right now.'],
-  ['Review', 'Something here is worth checking before you share sensitive information or allow access.'],
-  ['High Attention', 'Several strong warning signs need a closer look.']
+  ['Review', "There's something worth checking."],
+  ['High Attention', 'Several strong signals are worth checking carefully.']
 ]) test(`${label} has the intended plain-language summary`, () => assert.equal(statusCopy[label], wording));
-test('status copy avoids safety verdicts and immediately qualifies Normal', () => {
+test('status copy avoids safety verdicts and transparency explains the limit', async () => {
   assert.doesNotMatch(Object.values(statusCopy).join(' '), /\b(?:safe|unsafe|malware|spyware|guaranteed|phishing confirmed)\b/i);
-  assert.equal(normalCaveat, 'These checks cannot prove a site is safe.');
+  assert.match(await read('src/transparency/transparency.html'), /These checks cannot prove a site is safe/);
 });
 test('evidence states distinguish unchecked/unavailable from no review and include words, not only color', () => {
   assert.equal(evidenceLabel({ checked: false }), '— Not checked');
   assert.equal(evidenceLabel({ available: false }), '— Unavailable');
   assert.equal(evidenceLabel({ pending: true }), '— Checking…');
-  for (const [status, text] of [['Normal', 'No review signal'], ['Review', 'Review suggested'], ['High Attention', 'High Attention']]) {
+  for (const [status, text] of [['Normal', 'Normal'], ['Review', 'Review'], ['High Attention', 'High Attention']]) {
     assert.ok(evidenceLabel({ available: true, status }).includes(text));
   }
 });
-test('local and user-requested external sources have explicit textual labels', () => {
-  assert.deepEqual(evidenceSources, { local: 'LOCAL', external: 'EXTERNAL · USER REQUESTED' });
+test('local and user-requested external sources have explicit textual labels', async () => {
+  const html = await read('src/popup/popup.html');
+  assert.match(html, /Local checks only/);
+  assert.match(html, /EXTERNAL · USER REQUESTED/);
 });
 test('initial privacy summary never falsely says VirusTotal was used or that page structure was scanned', () => {
   const model = privacySummary(initialPrivacyState());
@@ -104,7 +106,7 @@ function documentFixture() {
 test('privacy presenter renders local check state and clears all data on closing', () => {
   const document = documentFixture(); const presenter = createPrivacyPresenter(document);
   presenter.local('page', { available: true, status: 'Review' });
-  assert.match(document.getElementById('privacy-local').textContent, /Page structure: ⚠ Review suggested/);
+  assert.match(document.getElementById('privacy-local').textContent, /Page structure: ⚠ Review/);
   presenter.external({ phase: 'complete', transmission: 'shared', keyMode: 'remembered' });
   assert.match(document.getElementById('privacy-stored').textContent, /remembered locally/);
   presenter.clear();
@@ -156,7 +158,7 @@ test('popup evidence order, accessible labels, status text and keyboard disclosu
   for (const id of ids) assert.match(html, new RegExp(`<details class="evidence-section" id="${id}">\\s*<summary><h2>`));
   assert.match(html, /aria-describedby="summary overview-scope"/); assert.match(html, /id="status"[^>]*role="status"/);
   assert.match(html, /aria-label="PrivacyLens tools"/); assert.match(html, /id="privacy-summary"/);
-  assert.equal((html.match(/class="source-label">LOCAL/g) ?? []).length, 5); assert.match(html, /EXTERNAL · USER REQUESTED/);
+  assert.equal((html.match(/class="source-label">LOCAL/g) ?? []).length, 0); assert.match(html, /EXTERNAL · USER REQUESTED/);
 });
 test('transparency has headings, navigable table caption, keyboard focus and no fake self-score', async () => {
   const html = await read('src/transparency/transparency.html');

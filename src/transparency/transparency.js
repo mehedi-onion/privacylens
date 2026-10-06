@@ -1,16 +1,13 @@
+import { appendExplanation } from '../ui/finding-view.js';
 import { permissionUses, dataBoundaries, limitations } from './transparency-data.js';
 
 export function renderTransparency(document) {
-  const paragraph = (parent, label, text) => {
-    const node = document.createElement('p'); const heading = document.createElement('strong');
-    heading.textContent = label; node.append(heading, document.createTextNode(text)); parent.append(node);
-  };
   const permissions = document.getElementById('permission-uses'); permissions.replaceChildren();
   for (const entry of permissionUses) {
     const details = document.createElement('details'); const summary = document.createElement('summary');
     summary.textContent = `${entry.title} — ${entry.permission}${entry.optional ? ' (optional)' : ''}`; details.append(summary);
     for (const [label, text] of [['Why', entry.why], ['What PrivacyLens does', entry.uses],
-      ['What it does not do', entry.doesNot], ['What Chrome also allows', entry.boundary]]) paragraph(details, label, text);
+      ['What it does not do', entry.doesNot], ['What Chrome also allows', entry.boundary]]) appendExplanation(document, details, label, text);
     permissions.append(details);
   }
   const rows = document.getElementById('boundary-rows'); rows.replaceChildren();

@@ -53,7 +53,7 @@ export function createReputationController(chromeApi, document, { signal, onRepo
         requestId = `lookup-${Math.random().toString(36).slice(2)}`;
         document.getElementById('vt-result').textContent = 'Looking up the confirmed hostname…';
         setEvidenceState(document, 'reputation', { pending: true });
-        onPrivacy({ phase: 'pending' });
+        onPrivacy({ phase: 'pending', hostname: chosen.hostname });
         const result = await sendReputationMessage(chromeApi, { type: 'privacyLens:vt-lookup', ...chosen, confirmed: true, requestId });
         if (!active(version)) return;
         const localOnly = ['no-key', 'host-denied', 'invalid-domain', 'tab-changed', 'busy', 'rate-limit'].includes(result.kind);

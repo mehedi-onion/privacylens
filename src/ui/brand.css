@@ -1,0 +1,2 @@
+.brand-logo { display: block; width: 180px; height: 42px; object-fit: cover; background: #fafbf9; border-radius: 3px; }
+header > .brand-logo { margin-bottom: 18px; }

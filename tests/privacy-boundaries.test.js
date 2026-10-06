@@ -51,8 +51,13 @@ test('shipped source isolates opt-in networking and key storage; other privacy g
     if (!['src/reputation/key-store.js', 'src/reputation/reputation-worker.js'].includes(name)) {
       assert.doesNotMatch(source, /\b(?:chrome|chromeApi)\.storage\b/, name);
     }
-    if (!['src/reputation/domain-rules.js', 'src/reputation/virustotal-client.js', 'src/options/options.html'].includes(name)) {
+    if (!['src/reputation/domain-rules.js', 'src/reputation/virustotal-client.js', 'src/transparency/transparency.html'].includes(name)) {
       assert.doesNotMatch(source, /https?:\/\//, name);
+    }
+    if (name === 'src/transparency/transparency.html') {
+      assert.deepEqual([...source.matchAll(/href="(https:[^"]+)"/g)].map(match => match[1]), [
+        'https://docs.virustotal.com/reference/public-vs-premium-api', 'https://docs.virustotal.com/reference/domain-info']);
+      assert.doesNotMatch(source, /<(?:script|img|link)[^>]+(?:src|href)="https?:/);
     }
     assert.doesNotMatch(source, mutations, file.pathname);
     assert.doesNotMatch(source, secret, file.pathname);

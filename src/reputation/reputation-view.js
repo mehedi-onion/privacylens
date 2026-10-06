@@ -1,4 +1,6 @@
 import { reputationMessages } from './reputation-messages.js';
+import { appendExplanation, moreDetails } from '../ui/finding-view.js';
+import { setEvidenceState } from '../ui/status-copy.js';
 
 export function clearReputation(document) {
   document.getElementById('vt-result').replaceChildren();
@@ -11,28 +13,26 @@ export function showReputationMessage(document, kind) {
 }
 export function renderReputation(document, report, advice) {
   const container = document.getElementById('vt-result'); container.replaceChildren();
+  const flags = report.counts.malicious + report.counts.suspicious;
+  const verdicts = flags + report.counts.harmless + report.counts.undetected;
+  setEvidenceState(document, 'reputation', { available: verdicts > 0, status: flags ? 'Review' : 'Normal' },
+    verdicts ? `${flags} of ${verdicts} engines flagged this domain` : 'No vendor verdicts');
   const heading = document.createElement('p'); heading.textContent = advice.label;
-  const status = document.createElement('p'); status.className = 'status'; status.dataset.status = advice.status;
-  status.textContent = `Address and VirusTotal: ${advice.status}`;
-  const source = document.createElement('p'); source.textContent = `Checked hostname: ${report.hostname}`;
-  container.append(heading, status, source);
+  const source = document.createElement('p'); source.className = 'context'; source.textContent = `Checked: ${report.hostname}`;
+  container.append(heading, source);
   const list = document.createElement('dl'); list.className = 'vt-counts';
   for (const [label, key] of [['Malicious', 'malicious'], ['Suspicious', 'suspicious'], ['Harmless', 'harmless'], ['Undetected', 'undetected']]) {
     const term = document.createElement('dt'); term.textContent = label;
     const count = document.createElement('dd'); count.textContent = String(report.counts[key]);
     list.append(term, count);
   }
-  if (report.timeout !== null) {
-    const term = document.createElement('dt'); term.textContent = 'Timeout';
-    const count = document.createElement('dd'); count.textContent = String(report.timeout); list.append(term, count);
-  }
   container.append(list);
+  const details = moreDetails(document, 'What these results mean');
   for (const [label, text] of [['What was noticed', `VirusTotal reports ${report.counts.malicious} malicious and ${report.counts.suspicious} suspicious vendor verdicts for this hostname.`],
     ['Why this matters', advice.explanation], ['Consider', 'Check the official address through a source you trust. Keep the local findings in mind too.']]) {
-    const paragraph = document.createElement('p'); const title = document.createElement('strong'); title.textContent = `${label}: `;
-    paragraph.append(title, document.createTextNode(text)); container.append(paragraph);
+    appendExplanation(document, details, label, text);
   }
-  for (const text of [advice.caveat, 'Closing this popup discards this reputation result.']) {
-    const paragraph = document.createElement('p'); paragraph.className = 'permission-context'; paragraph.textContent = text; container.append(paragraph);
-  }
+  const caveat = document.createElement('p'); caveat.className = 'context'; caveat.textContent = advice.caveat; details.append(caveat);
+  if (report.timeout !== null) { const timeout = document.createElement('p'); timeout.textContent = `Engines that timed out: ${report.timeout}`; details.append(timeout); }
+  container.append(details);
 }

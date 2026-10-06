@@ -296,7 +296,7 @@ test('Chrome warning text is displayed without turning warnings into behavior cl
   await createAuditController(api, document).refresh();
   assert.match(document.getElementById('extension-list').textContent, /A localized browser warning/);
   assert.match(document.getElementById('extension-list').textContent, /A sample notes tool/);
-  assert.match(document.getElementById('inventory-summary').textContent, /0 worth reviewing/);
+  assert.match(document.getElementById('inventory-summary').textContent, /0 Review or High Attention/);
 });
 
 test('a later read wins and an older response cannot restore an earlier inventory', async () => {

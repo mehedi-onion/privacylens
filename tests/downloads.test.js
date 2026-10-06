@@ -413,12 +413,12 @@ test('download view renders text explanations and no file-control or history UI'
   const document = view();
   renderDownloadCheck(document, { ...reply(), check: check({ filename: '<script>.pdf.exe', danger: 'uncommon' }) });
   const output = document.getElementById('download-check').textContent;
-  assert.match(output, /<script>\.pdf\.exe.*Review.*Source.*Details and guidance.*Chrome.*Consider/);
+  assert.match(output, /<script>\.pdf\.exe.*Review.*Source.*Chrome.*Consider.*File details/);
   assert.doesNotMatch(output, /Cancel download|Delete file|Open file|download history list/);
   clearDownloadCheck(document);
   assert.equal(document.getElementById('download-check').textContent, '');
   renderDownloadCheck(document, { available: false });
-  assert.equal(document.getElementById('download-check').textContent, 'No recent PrivacyLens-observed download.');
+  assert.equal(document.getElementById('download-check').textContent, 'No recent download.');
 });
 test('download source contains no file-content/hash/network/persistence or mutation API calls', async () => {
   const root = new URL('../src/downloads/', import.meta.url);

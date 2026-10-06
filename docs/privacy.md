@@ -1,6 +1,6 @@
 # PrivacyLens privacy boundaries
 
-**See → Understand → Decide → Forget.** Milestone 8, October 7, 2026.
+**See → Understand → Decide → Forget.**
 
 | Feature | Leaves browser? |
 | --- | --- |
@@ -16,7 +16,7 @@ PrivacyLens has no account, backend, analytics, telemetry, browsing database, sc
 
 ## Optional external lookup
 
-The popup first displays the selected **hostname**. It sends nothing until you press **Confirm hostname lookup** and grant the optional HTTPS API host access if Chrome asks. No lookup occurs automatically on startup, popup opening, tab changes, navigation, page scanning or downloads. Declining either confirmation/grant leaves all local features available.
+The popup first displays the selected **hostname**. It sends nothing until you press **Confirm lookup** and grant the optional HTTPS API host access if Chrome asks. No lookup occurs automatically on startup, popup opening, tab changes, navigation, page scanning or downloads. Declining either confirmation/grant leaves all local features available.
 
 One GET goes to `https://www.virustotal.com/api/v3/domains/{hostname}`. It sends the exact public hostname (including subdomains) and your API key in the `x-apikey` header, plus normal network metadata such as IP address and browser headers. Cookies and referrer are omitted; redirects are refused. There is no request body.
 
@@ -47,7 +47,7 @@ Closing a view clears its displayed data and ignores late replies. A finite pend
 
 ## Visible privacy summary and data boundaries
 
-The popup's **Privacy of this scan** is a snapshot, not a log. It names local check states, the external request state, and key configuration without returning the key. Reading this configuration on popup opening is local and does not run a reputation lookup. A confirmed request with an HTTP response discloses sharing even if authentication failed or no report was returned. Network failure/cancellation is uncertain and says data may have been shared. A local preflight/quota rejection sends nothing. Once shared or possibly shared, that disclosure remains until the popup closes/reloads, even if the visible report is cleared.
+The popup's **Privacy** is a snapshot, not a log. It names local check states, the external request state, and key configuration without returning the key. Reading this configuration on popup opening is local and does not run a reputation lookup. A confirmed request with an HTTP response discloses sharing even if authentication failed or no report was returned. Network failure/cancellation is uncertain and says data may have been shared. A local preflight/quota rejection sends nothing. Once shared or possibly shared, that disclosure remains until the popup closes/reloads, even if the visible report is cleared.
 
 The local state list describes the current popup; it does not promise anything about earlier views, ordinary website traffic or other browser services. Page scans/downloads have separate labels from the website overview. Chrome's broad API capabilities are explained in **Audit PrivacyLens**, alongside the narrower behavior enforced in this code.
 
@@ -63,6 +63,6 @@ The local state list describes the current popup; it does not promise anything a
 | VirusTotal API key | Yes | Sent to VirusTotal as authentication during a requested lookup | Session only by default; local only if Remember is selected |
 | Anonymous request budget | Yes | No | Session memory only; four numbers, no hostname or report |
 
-Here persisted means saved beyond browser restart or extension reload. Temporary worker memory can outlive a popup for at most five minutes; the session key and quota counters have the existing browser-session lifetime. No new data is collected or stored in Milestone 8.
+Here persisted means saved beyond browser restart or extension reload. Temporary worker memory can outlive a popup for at most five minutes; the session key and quota counters have the existing browser-session lifetime. The cleanup does not change what is collected or stored.
 
 PrivacyLens explains observable signals. It does not claim to know intent: a website's honesty, future permission misuse, an extension's actual behavior, file harmlessness, a complete redirect chain or activities outside the approved APIs. A clean external report does not guarantee safety or erase local findings. The [transparency page](../src/transparency/transparency.html) presents these boundaries inside the extension.

@@ -1,10 +1,11 @@
 import { setEvidenceState } from '../ui/status-copy.js';
+import { findingDetails, moreDetails } from '../ui/finding-view.js';
 export function clearDownloadCheck(document) {
   document.getElementById('download-check').replaceChildren();
 }
 
 export function renderDownloadCheck(document, result) {
-  setEvidenceState(document, 'download', { available: result?.available, checked: result === null || result?.available === true, status: result?.check?.status });
+  setEvidenceState(document, 'download', { available: result?.available, checked: result === null || result?.available === true, status: result?.check?.status }, result?.available ? result.check.filename : result === null ? 'Unavailable' : 'No recent download');
   const container = document.getElementById('download-check');
   container.replaceChildren();
   const paragraph = (text, parent = container, className) => {
@@ -15,7 +16,7 @@ export function renderDownloadCheck(document, result) {
     return element;
   };
   if (!result?.available) {
-    paragraph(result === null ? 'Download check unavailable. Chrome could not provide the local check.' : 'No recent PrivacyLens-observed download.');
+    paragraph(result === null ? 'Download details unavailable.' : 'No recent download.');
     return;
   }
   const { check } = result;
@@ -23,21 +24,11 @@ export function renderDownloadCheck(document, result) {
   const status = paragraph(check.status, container, 'status');
   status.dataset.status = check.status;
   paragraph(`Source: ${check.source}`);
-  const signals = check.findings.filter(finding => finding.level === 'review');
-  paragraph(signals.length ? signals.slice(0, 3).map(finding => finding.title).join(' · ') : 'No review signals from this metadata check.', container, 'permission-context');
-  const details = document.createElement('details');
-  const summary = document.createElement('summary');
-  summary.textContent = 'Details and guidance';
-  details.append(summary);
+  const details = moreDetails(document, 'File details');
+  for (const finding of check.findings) (finding.level === 'review' || finding.id === 'browser-danger' ? container : details).append(findingDetails(document, finding));
   for (const [label, value] of [['Final source', check.finalSource], ['Download state', check.state], ['Paused', check.paused],
-    ['Browser-reported type', check.mime], ['Browser-reported size', check.fileSize === null ? 'Unknown' : `${check.fileSize.toLocaleString()} bytes`]]) {
+    ['File type', check.mime], ['Size', check.fileSize === null ? 'Unknown' : `${check.fileSize.toLocaleString()} bytes`]]) {
     paragraph(`${label}: ${value}`, details);
-  }
-  for (const finding of check.findings) {
-    const heading = document.createElement('strong');
-    heading.textContent = `${finding.level === 'review' ? '⚠' : 'ⓘ'} ${finding.title}`;
-    const explanation = paragraph('', details);
-    explanation.append(heading, document.createTextNode(`What was noticed: ${finding.detected}. Why this matters: ${finding.why} Consider: ${finding.suggestion}`));
   }
   container.append(details);
 }

@@ -78,7 +78,10 @@ test('popup shows six actual states, all explanations, and separate permission r
   assert.equal(document.getElementById('status').textContent, 'Review');
   assert.equal(document.getElementById('findings').children.length, 1);
   assert.match(document.getElementById('permission-notes').textContent, /still need camera, microphone and location access/);
-  const rows = document.getElementById('site-permissions').children;
+  const displayed = document.getElementById('site-permissions').children;
+  assert.equal(displayed.length, 5);
+  assert.equal(displayed[4].children[0].textContent, 'More permissions');
+  const rows = [...displayed.slice(0, 4), ...displayed[4].children.slice(1)];
   assert.equal(rows.length, 6);
   assert.deepEqual(rows.map(row => row.children[0].textContent), [
     'CameraAllowed', 'MicrophoneAllowed', 'LocationAllowed', 'NotificationsAsk', 'Pop-upsBlocked', 'Automatic downloadsBlocked'
@@ -98,7 +101,7 @@ test('permission updates replace prior state and review notes when popup is reop
   await scanCurrentTab(api, document);
   assert.equal(document.getElementById('status').textContent, 'Normal');
   assert.equal(document.getElementById('permission-notes').children.length, 0);
-  assert.equal(document.getElementById('site-permissions').children.length, 6);
+  assert.equal(document.getElementById('site-permissions').children.length, 5);
   assert.doesNotMatch(document.getElementById('site-permissions').textContent, /Allowed/);
 });
 

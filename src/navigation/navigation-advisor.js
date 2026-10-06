@@ -44,19 +44,19 @@ export function adviseNavigation(snapshot, urlResult) {
         'Client redirects use page scripts or refresh instructions. They are often part of ordinary site navigation.',
       'Check the final address if you were not expecting this destination.');
   }
-  if (!redirects.length) add('no-redirect-qualifier', 'info', 'No redirect qualifier reported',
-    'Chrome did not report a server or client redirect qualifier for this observed navigation.',
+  if (!redirects.length) add('no-redirect-qualifier', 'info', 'No redirect reported',
+    'Chrome did not report a redirect for this recent visit.',
     'This is a limited browser signal, not proof of a direct path or site safety.', 'Still check the current address.');
   if (snapshot.qualifiers.includes('forward_back')) add('forward_back', 'info', 'Back or Forward navigation',
     'Chrome reports that Back or Forward initiated this navigation.', 'Returning to an earlier page is normal browser behavior.', 'Check that this is the page you intended to return to.');
   if (snapshot.qualifiers.includes('from_address_bar')) add('from_address_bar', 'info', 'Started from the address bar',
     'Chrome reports that this navigation started from the address bar.', 'This identifies how navigation began, not whether the destination is trustworthy.', 'Compare the final domain with the address you expected.');
   const reviewSignals = urlResult.findings.filter(finding => finding.level === 'review');
-  if (redirects.length && reviewSignals.length) add('redirect-url-context', 'review', 'Redirect with URL review signals',
+  if (redirects.length && reviewSignals.length) add('redirect-url-context', 'review', 'Redirect and address findings',
     `The final address also has these URL signals: ${reviewSignals.map(finding => finding.title).join('; ')}.`,
     'A redirect does not explain intent. Existing address signals make checking the destination more useful; no earlier domain or redirect chain is known.',
     'Review the URL findings and use an official address before entering sensitive information.');
   return { available: true, status: findings.some(finding => finding.level === 'review') ? 'Review' : 'Normal', findings,
     summary: redirects.length ? 'Chrome reports that this page was reached through a redirect. Redirects are common and often legitimate.' :
-      'Chrome reported no redirect qualifier for this observed navigation.' };
+      'Chrome reported no redirect for this recent visit.' };
 }

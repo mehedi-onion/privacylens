@@ -447,7 +447,8 @@ test('reputation counts are text-only and do not replace site-permission Review 
   renderResult(document, local, { status: 'Review', permissions: [], notes: [] }, { status: 'Normal' }, advice);
   assert.equal(document.getElementById('status').textContent, 'Review');
   renderReputation(document, normalizeReport(payload(), 'accounts.google.com'), advice);
-  assert.match(document.getElementById('vt-result').textContent, /Closing this popup discards/);
+  assert.match(document.getElementById('vt-result').textContent, /What these results mean.*local findings still apply/);
+  assert.doesNotMatch(document.getElementById('vt-result').textContent, /Closing this popup/);
 });
 test('combined High Attention explains several signals without assuming HTTP', () => {
   const document = documentFixture(); const local = analyzeUrl('https://user@google-login-example.com');

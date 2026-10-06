@@ -4,26 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PrivacyLens — VirusTotal settings</title>
+  <link rel="stylesheet" href="../ui/brand.css">
   <link rel="stylesheet" href="options.css">
   <script type="module" src="options.js"></script>
 </head>
 <body>
-  <header><p class="eyebrow">PrivacyLens</p><h1>VirusTotal integration</h1></header>
+  <header><img class="brand-logo" src="../../assets/logo.png" alt="PrivacyLens" width="180" height="42"><h1>VirusTotal</h1><p class="context">Optional reputation checks</p></header>
   <main>
-    <p>Optional. Your key is used only when you manually request a VirusTotal lookup. Local PrivacyLens checks work without it.</p>
     <label for="vt-key">API key</label>
     <input id="vt-key" type="password" maxlength="256" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="key-privacy">
-    <label class="remember"><input id="remember-key" type="checkbox"> Remember this key on this browser</label>
-    <p class="context" id="key-privacy">Unchecked: the key stays in browser-session memory until restart or extension reload/disable/update. Checked: only the key is stored locally in this browser profile, without sync. PrivacyLens does not encrypt it as a secret vault; someone with access to the profile may recover it.</p>
-    <div class="controls"><button id="save-key" type="button">Save key</button><button id="forget-key" type="button">Forget key</button></div>
+    <label class="remember"><input id="remember-key" type="checkbox"> Remember on this browser</label>
+    <p class="context" id="key-privacy">Unchecked: kept only for this browser session.<br>Checked: stored locally in this browser profile, without sync.</p>
+    <div class="controls"><button id="save-key" type="button">Save</button><button id="forget-key" type="button">Forget</button></div>
     <p id="key-status" role="status">Reading configuration…</p>
-    <p class="context">The saved key is never shown here. Saving does not test it or send a request. Forget removes the extension's copies; it does not revoke the key at VirusTotal.</p>
-    <h2>Before using VirusTotal</h2>
-    <p>Confirmed hostname lookups leave your browser. VirusTotal says queried indicators may be scanned and included in its shared dataset. Do not check confidential or personal hostnames.</p>
-    <p class="context">The public API is for permitted personal/academic, non-commercial use, with 4 requests per minute and 500 per day. PrivacyLens spaces requests and respects quota errors. Account restrictions and other clients still apply.</p>
-    <p><a href="https://docs.virustotal.com/reference/public-vs-premium-api" target="_blank" rel="noopener noreferrer">VirusTotal API limits and restrictions</a></p>
-    <p><a href="https://docs.virustotal.com/reference/domain-info" target="_blank" rel="noopener noreferrer">VirusTotal domain lookup and privacy notice</a></p>
+    <p class="context">Used only for a lookup you confirm. Saving sends no request.</p>
+    <p><a href="../transparency/transparency.html#virustotal">How PrivacyLens uses this key</a></p>
   </main>
-  <footer>Only an optional key is saved to disk. No domains, reports or browsing history are saved. <a href="../transparency/transparency.html">Audit PrivacyLens · transparency</a></footer>
+  <footer><a href="../transparency/transparency.html">About &amp; privacy</a></footer>
 </body>
 </html>

@@ -4,36 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PrivacyLens — Extensions</title>
+  <link rel="stylesheet" href="../ui/brand.css">
   <link rel="stylesheet" href="extensions.css">
   <script type="module" src="extensions.js"></script>
 </head>
 <body>
   <header>
-    <p class="eyebrow">PrivacyLens</p>
-    <h1>Extension privacy audit</h1><p class="source-label">LOCAL · read on demand</p>
-    <p>Understand what your installed extensions are allowed to access.</p>
+    <img class="brand-logo" src="../../assets/logo.png" alt="PrivacyLens" width="180" height="42">
+    <h1>Extension privacy audit</h1>
+    <p>What can your extensions access?</p>
   </header>
   <main id="audit" aria-busy="true">
-    <p class="context">This reads Chrome’s permission list locally. It shows what extensions can do, not how they use their access.</p>
+    <p class="context">Read locally. Permissions show what an extension can do, not what it actually does.</p>
     <div class="controls">
       <label>Search by name<input id="extension-search" type="search" autocomplete="off" disabled></label>
-      <label>Review label<select id="extension-filter" disabled>
+      <label>Status<select id="extension-filter" disabled>
         <option value="all">All</option>
         <option value="Normal">Normal</option>
         <option value="Review">Review</option>
         <option value="High Attention">High Attention</option>
       </select></label>
-      <button id="read-again" type="button" disabled>Read again</button>
+      <button id="read-again" type="button" disabled>Refresh</button>
     </div>
     <p id="inventory-summary" role="status">Reading installed extensions…</p>
     <p id="inventory-note" class="context"></p>
     <div id="extension-list"></div>
   </main>
   <footer>
-    <p>See → Understand → Decide → Forget.</p>
-    <p><a href="../transparency/transparency.html">Audit PrivacyLens · transparency</a></p>
-    <p>Close or reload this page to clear the list. Read again replaces it. No extension list or history is saved.</p>
-    <p>PrivacyLens has no controls to disable, uninstall, launch, or change extensions.</p>
+    <p>The list clears when you close or reload this page. Nothing is saved.</p>
+    <p><a href="../transparency/transparency.html">About &amp; privacy</a></p>
   </footer>
 </body>
 </html>

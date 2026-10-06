@@ -1,3 +1,5 @@
+> Historical record. For current behavior, see [the README](../../README.md) and [real-browser validation](../real-browser-validation.md).
+
 # Milestone 8 verification
 
 Verified October 7, 2026 against published baseline `af35fbff0b929d2051db609c4d9bd213cdc195ce`.
@@ -13,11 +15,11 @@ Verified October 7, 2026 against published baseline `af35fbff0b929d2051db609c4d9
 
 Actual modules were previewed locally with synthetic Chrome APIs and a mocked request adapter: A Normal, B brand Review, C combined synthetic High Attention, D three allowed sensitive site settings, E explicit structural page scan, F redirect/context guidance, G temporary double-extension download, H vendor result plus failed authentication and sticky sharing disclosure, I dedicated extension audit, J transparency. Keyboard expansion, readable light/dark layouts and absence of console warnings/errors were checked. Popup preview image is outside the repository. No real key, inventory, file contents or live reputation request was used.
 
-A preview is not actual MV3 loading or lifecycle verification. The [current manual checklist](manual-testing.md) covers real Chrome prompts, popup sizing, direct/redirect/page/download cases, keyboard/screen reader, profile/session cleanup and optional live VirusTotal request with a fresh private key.
+A preview is not actual MV3 loading or lifecycle verification. The [current manual checklist](../manual-testing.md) covers real Chrome prompts, popup sizing, direct/redirect/page/download cases, keyboard/screen reader, profile/session cleanup and optional live VirusTotal request with a fresh private key.
 
 ## Publication scope
 
-Milestone 8 is one separate commit: `feat: improve PrivacyLens trust and privacy transparency`, normally pushed to origin/main. No later milestone or new scanner is included. The [privacy table](privacy.md) and bundled transparency page distinguish temporary memory from optional key persistence and authentication transmission.
+Milestone 8 is one separate commit: `feat: improve PrivacyLens trust and privacy transparency`, normally pushed to origin/main. No later milestone or new scanner is included. The [privacy table](../privacy.md) and bundled transparency page distinguish temporary memory from optional key persistence and authentication transmission.
 
 ---
 
@@ -44,11 +46,11 @@ Verified October 7, 2026 against the published redirect-awareness baseline `6f26
 
 The actual popup, options, worker/message/key adapters and count renderer were exercised on loopback under the manifest CSP, with a synthetic key, Chrome mock and replaced request adapter. Verified: no-key guidance; zero calls on configuration/first-click disclosure/cancel; one call after confirmation; sanitized hostname path without query/fragment; counts/Review integration; private fixed invalid-key guidance; session Save, explicitly checked Remember and Forget; empty field after Save; no errors/warnings; reload clearing the previous result. A preview image is saved beside the project. No real browser inventory, credential or external report was used. The temporary harness is outside the repository and is removed from the active browser/server after verification.
 
-This does not prove actual Chrome unpacked loading, the optional-host prompt, profile/session storage lifetimes, or a real VirusTotal account's restrictions/report/CORS behavior. Those remain [the exact personal Chrome checks](manual-testing.md). Use a fresh key only in settings and a public hostname whose disclosure is acceptable. Mock coverage supplies suspicious/error/quota cases without consuming live quota or visiting malicious sites.
+This does not prove actual Chrome unpacked loading, the optional-host prompt, profile/session storage lifetimes, or a real VirusTotal account's restrictions/report/CORS behavior. Those remain [the exact personal Chrome checks](../manual-testing.md). Use a fresh key only in settings and a public hostname whose disclosure is acceptable. Mock coverage supplies suspicious/error/quota cases without consuming live quota or visiting malicious sites.
 
 ## Documented disclosure and Git scope
 
-The [core privacy table](privacy.md), popup disclosure, settings, README and platform record distinguish local features from the confirmed external domain lookup. They explicitly disclose VirusTotal's queried-indicator sharing policy, public API limits/restrictions, unencrypted profile key storage and no guaranteed-safety result.
+The [core privacy table](../privacy.md), popup disclosure, settings, README and platform record distinguish local features from the confirmed external domain lookup. They explicitly disclose VirusTotal's queried-indicator sharing policy, public API limits/restrictions, unencrypted profile key storage and no guaranteed-safety result.
 
 Milestone 7 is a separate commit after `6f260b6`, with message `feat: add opt-in VirusTotal reputation checks`. Publication uses a normal push to origin/main, never force push. No later milestone, URL/file submission, backend, analytics or scan-history database is included.
 
@@ -73,7 +75,7 @@ Verified October 7, 2026 against published download baseline `3662f3c05c362cadfe
 
 The actual popup, worker adapters, reader and advisor were exercised on loopback under the manifest CSP with synthetic Chrome events/messaging. Confirmed initial unavailable state, no qualifier with address-bar initiation, server-only/client-only/both redirects, Back/Forward, Review with a synthetic brand mismatch, expanded guidance, and clearing back to unavailable. No preview console errors appeared. The screenshot/harness are outside the repository; the temporary tab and server were closed.
 
-This was not a real MV3 event/lifecycle test. Actual Chrome permission acceptance, qualifier delivery (including HSTS/HTTPS-first/BFCache differences), document IDs, active-window/private handling, suspension and Network/Storage inspection remain in [the manual checklist](manual-testing.md). Harmless loopback fixtures support direct and same-site client/server redirects without visiting deceptive domains. No full redirect chain or expected domain is claimed.
+This was not a real MV3 event/lifecycle test. Actual Chrome permission acceptance, qualifier delivery (including HSTS/HTTPS-first/BFCache differences), document IDs, active-window/private handling, suspension and Network/Storage inspection remain in [the manual checklist](../manual-testing.md). Harmless loopback fixtures support direct and same-site client/server redirects without visiting deceptive domains. No full redirect chain or expected domain is claimed.
 
 ## Git scope
 
@@ -99,7 +101,7 @@ Verified October 7, 2026 against published Milestone 4 commit `e1416c259a9d47591
 
 The actual popup and worker observer/model were exercised on loopback with synthetic Chrome events and local messaging under the manifest’s strict CSP. Verified the empty state, safe PDF Normal, uncommon installer Review, warning-plus-double-extension High Attention, metadata/guidance expansion, replacement, and erasure returning to empty. No real download metadata was read and no browser danger state was triggered. The temporary harness is outside the repository; its tab and server were closed after testing. This does not test a real MV3 worker’s lifecycle.
 
-Real Chrome permission acceptance, downloaded metadata, callback events, worker suspension, incognito behavior and Network/Storage checks still require [the manual checklist](manual-testing.md). Harmless local fixtures include a simple PDF and plain text with an executable-looking download name; no dangerous contents are used. No live browser danger classification is manufactured by the extension.
+Real Chrome permission acceptance, downloaded metadata, callback events, worker suspension, incognito behavior and Network/Storage checks still require [the manual checklist](../manual-testing.md). Harmless local fixtures include a simple PDF and plain text with an executable-looking download name; no dangerous contents are used. No live browser danger classification is manufactured by the extension.
 
 ## Git scope
 
@@ -125,7 +127,7 @@ Verified October 7, 2026 against published Milestone 3 commit `c9e9a553998176a1b
 
 The actual popup files were previewed on loopback with a temporary Chrome API mock outside the repository and the manifest’s strict CSP. Verified no scan before the button click, separate URL/page labels, expandable plain-language details, and cleared results after reload. The real collector also ran on the bundled fixture in an in-app browser DOM: it recognized forms/links/frame attributes and returned no made-up typed field or textarea contents. No external test links were followed or forms submitted. Preview tabs/server were closed. This is not a test of actual Chrome extension injection.
 
-Real unpacked loading, Chrome's permission prompt, temporary toolbar access, protected-page restrictions, and your browser's Network/Storage panels still require [the manual checklist](manual-testing.md). The bundled fixture blocks submissions and has no outgoing request code. It must be served on loopback for an ordinary HTTP tab.
+Real unpacked loading, Chrome's permission prompt, temporary toolbar access, protected-page restrictions, and your browser's Network/Storage panels still require [the manual checklist](../manual-testing.md). The bundled fixture blocks submissions and has no outgoing request code. It must be served on loopback for an ordinary HTTP tab.
 
 ## Git scope
 
@@ -152,7 +154,7 @@ Verified October 7, 2026 against the published Milestone 2 baseline `c405842`.
 
 The shipped audit files and manifest policy were served on loopback with a temporary synthetic Chrome management mock outside the repository. Verified Normal/Review/High Attention rows, disabled-state context, local search, label filters, explanation expansion, generated warning text, and replacement via Read again. No real installed-extension inventory was read. The preview tab and server were closed after verification.
 
-Actual unpacked loading, accepting Chrome's management prompt, matching your real extension details, manually toggling a third-party extension in Chrome, and checking errors/storage/network still require [the manual Chrome checklist](manual-testing.md). The preview cannot verify the real permission lifecycle or all Chromium variants.
+Actual unpacked loading, accepting Chrome's management prompt, matching your real extension details, manually toggling a third-party extension in Chrome, and checking errors/storage/network still require [the manual Chrome checklist](../manual-testing.md). The preview cannot verify the real permission lifecycle or all Chromium variants.
 
 ## Git scope
 
@@ -180,7 +182,7 @@ The actual popup files and strict manifest policy were tested through a temporar
 
 Verified mixed Allowed/Blocked/Ask rows, camera-only Normal, all-three-sensitive Review, six Unavailable rows on unsupported input, explanation expansion/collapse using keyboard controls, and calm layout. A preview image is saved beside the project folder.
 
-Actual unpacked installation, Chrome's new permission prompt, and readings after changing real site settings remain personal browser checks. The preview does not validate Chrome's real permission lifecycle or OS device access. Follow [the exact manual steps](manual-testing.md).
+Actual unpacked installation, Chrome's new permission prompt, and readings after changing real site settings remain personal browser checks. The preview does not validate Chrome's real permission lifecycle or OS device access. Follow [the exact manual steps](../manual-testing.md).
 
 ## Changes and Git
 
@@ -220,7 +222,7 @@ The actual popup files were served temporarily on loopback with the manifest's c
 - The strict policy initially blocked JSON module loads. Reference data now uses ordinary local JavaScript modules, avoiding any need to allow connections or add a build step.
 - No suspicious domains were opened; all test addresses were passed as strings to the local analyzer.
 
-The extension was **not installed in the user's browser profile** during this verification. Chrome's actual unpacked loading, toolbar access grant, popup sizing, and closing behavior still require the [personal browser checklist](manual-testing.md). The preview verifies rendering and module loading, not Chrome's permission lifecycle.
+The extension was **not installed in the user's browser profile** during this verification. Chrome's actual unpacked loading, toolbar access grant, popup sizing, and closing behavior still require the [personal browser checklist](../manual-testing.md). The preview verifies rendering and module loading, not Chrome's permission lifecycle.
 
 ## Scope and limitations
 

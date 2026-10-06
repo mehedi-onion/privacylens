@@ -1,14 +1,7 @@
 import { advisePermissions, combineStatuses } from '../permissions/permission-advisor.js';
 
-import { statusCopy, normalCaveat, setEvidenceState } from '../ui/status-copy.js';
-
-function appendExplanation(document, details, label, value) {
-  const paragraph = document.createElement('p');
-  const heading = document.createElement('strong');
-  heading.textContent = label;
-  paragraph.append(heading, document.createTextNode(value));
-  details.append(paragraph);
-}
+import { statusCopy, setEvidenceState } from '../ui/status-copy.js';
+import { appendExplanation, findingDetails, moreDetails, renderFindings } from '../ui/finding-view.js';
 
 export function renderResult(document, result, advice = advisePermissions(), navigation = { status: 'Normal' }, reputation = null) {
   document.getElementById('domain').textContent = result.domain ?? 'Address unavailable';
@@ -19,38 +12,20 @@ export function renderResult(document, result, advice = advisePermissions(), nav
   status.dataset.status = combinedStatus;
   status.hidden = false;
   document.getElementById('summary').textContent = result.available
-    ? `${statusCopy[combinedStatus]}${combinedStatus === 'Normal' ? ` ${normalCaveat}` : ''}` : 'No website assessment was made. Open an HTTP or HTTPS website to use PrivacyLens.';
-  const container = document.getElementById('findings');
-  container.replaceChildren();
-  for (const finding of result.findings) {
-    const details = document.createElement('details');
-    const summary = document.createElement('summary');
-    const symbol = document.createElement('span');
-    symbol.className = 'symbol';
-    symbol.setAttribute('aria-hidden', 'true');
-    symbol.textContent = finding.level === 'review' ? '⚠' : finding.id === 'https' ? '✓' : 'ⓘ';
-    summary.append(symbol, document.createTextNode(finding.title));
-    details.append(summary);
-    for (const [label, value] of [['What was noticed', finding.detected], ['Why this matters', finding.why], ['Consider', finding.suggestion]]) {
-      appendExplanation(document, details, label, value);
-    }
-    container.append(details);
-  }
+    ? statusCopy[combinedStatus] : 'No website assessment was made. Open an HTTP or HTTPS website to use PrivacyLens.';
+  renderFindings(document, document.getElementById('findings'), result.findings);
   document.getElementById('permissions-context').textContent =
-    'These are Chrome’s settings, not evidence of actual use. Default and site-specific choices may look the same.';
+    'Allowed means the browser permits access, not that the site is using it. Ask may be a default or a site choice.';
   const notes = document.getElementById('permission-notes');
   notes.replaceChildren();
   for (const note of advice.notes) {
-    const details = document.createElement('details');
+    const details = findingDetails(document, note);
     details.className = 'permission-note';
-    const summary = document.createElement('summary'); summary.textContent = `⚠ ${note.title}`; details.append(summary);
-    for (const [label, text] of [['What was noticed', note.detected], ['Why this matters', note.why], ['Consider', note.suggestion]]) {
-      appendExplanation(document, details, label, text);
-    }
     notes.append(details);
   }
   const permissionContainer = document.getElementById('site-permissions');
   permissionContainer.replaceChildren();
+  const more = moreDetails(document, 'More permissions');
   for (const permission of advice.permissions) {
     const details = document.createElement('details');
     details.className = 'permission-row';
@@ -70,9 +45,15 @@ export function renderResult(document, result, advice = advisePermissions(), nav
     ]) {
       appendExplanation(document, details, heading, value);
     }
-    permissionContainer.append(details);
+    (['popups', 'automaticDownloads'].includes(permission.id) ? more : permissionContainer).append(details);
   }
-  setEvidenceState(document, 'address', { available: result.available, status: result.status });
-  setEvidenceState(document, 'permissions', { available: advice.permissions.some(item => item.state !== 'unavailable'), status: advice.status });
+  if (more.children.length > 1) permissionContainer.append(more);
+  setEvidenceState(document, 'address', { available: result.available, status: result.status },
+    result.available ? result.status === 'Normal' ? 'No address warning' : 'Check the address' : 'Address unavailable');
+  const primary = advice.permissions.filter(item => ['camera', 'microphone', 'location', 'notifications'].includes(item.id));
+  const allowed = primary.filter(item => item.state === 'allow');
+  const permissionSummary = allowed.length ? `${allowed[0].name}: Allowed${allowed.length > 1 ? ` · ${allowed.length - 1} more` : ''}`
+    : primary.some(item => item.state === 'unavailable') ? 'Some settings unavailable' : 'Ask or blocked';
+  setEvidenceState(document, 'permissions', { available: primary.some(item => item.state !== 'unavailable'), status: advice.status }, permissionSummary);
   document.getElementById('result').setAttribute('aria-busy', 'false');
 }

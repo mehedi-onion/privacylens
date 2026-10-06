@@ -1,3 +1,5 @@
+> Historical record. For current behavior, see [the README](../../README.md) and [real-browser validation](../real-browser-validation.md).
+
 # Milestone 8 security and privacy audit
 
 Reviewed October 7, 2026 against `af35fbff0b929d2051db609c4d9bd213cdc195ce`.
@@ -40,4 +42,4 @@ Chrome's bundled permissions are broader than PrivacyLens's read-only implementa
 
 All 250 baseline tests remain and 40 new tests cover guidance, boundaries, manifest completeness, labels/keyboard controls/contrast and disclosure lifecycles. **290 passed, 0 failed**. All 56 JavaScript files pass syntax checking; JSON, relative imports, local assets and whitespace checks pass. Secret scanning covers all tracked/new files for VirusTotal-shaped keys, tokens, real password assignments, URL credentials, private keys and local credential files. Reviewed exceptions are synthetic fixtures, Boolean field metadata and the dynamic header variable; no real secret was found.
 
-Browser previews exercise all ten requested presentation scenarios using synthetic Chrome metadata and mocked VirusTotal responses, with no external request or real credential. Actual unpacked Chrome, optional host consent, real profile/session lifetimes, screen-reader behavior and live-account cases remain in [manual-testing.md](manual-testing.md).
+Browser previews exercise all ten requested presentation scenarios using synthetic Chrome metadata and mocked VirusTotal responses, with no external request or real credential. Actual unpacked Chrome, optional host consent, real profile/session lifetimes, screen-reader behavior and live-account cases remain in [manual-testing.md](../manual-testing.md).

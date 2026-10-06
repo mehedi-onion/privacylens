@@ -1,146 +1,82 @@
-# Personal Chrome checks — Milestone 8
+# Manual browser checklist
 
-Use current desktop Chrome/Chromium 102+. The [real Chromium validation record](real-browser-validation.md) lists tested scenarios, the navigation fix and remaining Google Chrome/screen-reader checks. Earlier synthetic previews did not test browser APIs. A user-entered fresh key has now exercised a live domain lookup; keep keys out of source, chat, screenshots and logs.
+Use an isolated desktop Chrome/Chromium profile and harmless pages/files. Do not enter real credentials into fixtures, download malware or bypass browser warnings. Record browser/OS versions and any gaps. The completed [real Chromium validation](real-browser-validation.md) and [cleanup review](product-cleanup.md) distinguish real API checks from mocked visual examples.
 
-1. Pull normally and reload at `chrome://extensions`. Confirm **0.8.0**. Compare permissions with 0.7.0: activeTab, contentSettings, management, scripting, downloads, webNavigation, storage; optional `https://www.virustotal.com/*`. There must be **no new permission or host prompt** from this upgrade.
-2. **A — Normal:** open a normal HTTPS website. Verify domain/status/one-sentence guidance appear first, including the no-guarantee caveat. Open Privacy of this scan: local checks have actual states; page scan is Not checked, missing navigation is Unavailable, external is None. No report or hostname is saved.
-3. **B/C — Review/High Attention:** use the offline synthetic tests for brand mismatch and a combined HTTP/sensitive-action example, without visiting deceptive sites. In Chrome, compare a harmless HTTP local fixture's informational findings. Do not weaken browser protection to manufacture a warning. Verify the three wording variants in `src/ui/status-copy.js` and expand findings: What was noticed, Why this matters, Consider. A weak signal must not become High Attention.
-4. **D — Site permissions:** change camera, microphone and location manually using Chrome site settings on a site you already trust. Reopen, verify real state changes and Review if all three are Allowed. Confirm no claim of use/misuse. Restore your preferred settings.
-5. **E — Page scan:** use the bundled safe fixture from the earlier page checklist. Click Scan this page explicitly. Check structural findings and separate Page scan status, then the privacy summary. No typed/password/card/email values may appear in UI/logs. Closing/reopening clears the scan.
-6. **F — Navigation:** use the direct and harmless same-site redirect fixture steps below. Verify actual qualifiers, no invented chain and no automatic escalation for a normal redirect. Switch/close tabs and verify context/cleanup.
-7. **G — Download:** use a normal PDF and safe synthetic executable-looking fixture from the earlier download checklist. Inspect Recent download and its separate status/source. No file read/open/delete/cancel controls may exist; the previous five-minute upper bound still applies.
-8. **H — External reputation (optional):** first verify no request on opening/cancelling. With a fresh eligible key, confirm one public hostname you consent to share. Privacy summary must name VirusTotal and authentication-key transmission. Invalid-key/no-report responses still disclose sharing; network interruption says it may have shared. Clear/cancel another check: prior disclosure must remain until popup closure. Reopen: result/disclosure gone, no automatic request. Follow the existing key/Forget/quota steps below; never expose the x-apikey header.
-9. **I — Extension audit:** inspect a simple and broad-access extension. Check enabled/disabled, independent labels, Chrome warnings and capabilities-not-behavior explanations. PrivacyLens is excluded; Audit PrivacyLens opens transparency rather than a fake score. No modifying controls exist.
-10. **J — Transparency:** open Audit PrivacyLens from popup, audit and settings. Compare all seven permissions and the one optional host with Chrome Details. Expand downloads/management/storage: verify broader Chrome capabilities and narrower implementation are explicit. Review all nine data-boundary rows, API-key transmission, temporary lifetimes and limitations.
-11. Use Tab/Shift+Tab, Enter and Space throughout. Verify focus stays visible in light/dark appearance, native summaries expand, buttons/inputs have meaningful names, headings/read order work with your screen reader, statuses have words/symbols without color, and the data table can scroll with keyboard. Check normal laptop popup height/scrolling and narrow page widths.
-12. Inspect extension/popup/worker errors, Network and Storage. No unexpected outgoing requests or result/history database; only confirmed VT domain GETs, optional key slots and four anonymous session quota numbers. No secret values or typed form content in logs. Verify all local features still work without a key.
+## Load and inspect
 
-The following M7 checklist remains relevant for live optional-host, key, quota and real-account behavior. Its initial version/upgrade instruction is historical; use **0.8.0**, with no new privileges.
+1. Open `chrome://extensions` (`brave://extensions` in Brave), enable Developer mode and load this folder unpacked. Reload after updates.
+2. Confirm version 0.8.0, the eye/lens toolbar icon, and no manifest or background-process errors. Existing permissions remain activeTab, contentSettings, management, scripting, downloads, webNavigation and storage; only VirusTotal host access is optional.
+3. Pin PrivacyLens. On a normal HTTPS page, open the popup. Check the logo, domain, Normal summary and six compact rows. The default view should fit an ordinary popup. Expand Website for the connection and address explanations.
+4. Check Review and High Attention using harmless local/mock examples, not a deceptive public website. Confirm calm wording and a reason/suggestion for each warning. A single password field or redirect must not create High Attention.
+5. Check an unsupported page such as `chrome://extensions`. Unavailable must not be presented as a successful check.
 
----
+## Local fixtures
 
-# Personal Chrome checks — Milestone 7
+From this repository, run:
 
-Use current desktop Chrome/Chromium **102+**. Offline mocks and the preview cannot prove the real optional-host prompt, key/session lifetime or VirusTotal account behavior. Use a **fresh** key entered only in PrivacyLens settings, never in source, chat, screenshots, logs or Git. No developer live requests were made.
+```sh
+python3 -m http.server 8767 --bind 127.0.0.1
+```
 
-1. Pull origin/main normally if needed and reload at `chrome://extensions`. Confirm **0.7.0** and required permissions activeTab, contentSettings, management, scripting, downloads, webNavigation, storage. Accept storage if prompted. VirusTotal host access is optional; there must be no required all-sites grant.
-2. With no key, open a normal HTTPS website and use URL/site/page/audit checks normally. Inspect popup and worker Network: no external PrivacyLens request occurs on opening, switching tabs, page scans, navigation or downloads. Click **Check reputation with VirusTotal**: expect settings guidance, no host prompt/request.
-3. Open **VirusTotal settings**, enter your fresh eligible key, leave Remember unchecked and press **Save key**. The password field clears; status says browser-session memory only. Saving must not call VirusTotal. In extension storage inspect **key names only**, keeping values private: the key belongs in session, not local or sync. No domains/reports are stored.
-4. Close/reopen settings: session configuration remains, with no key prefilled. Stop/restart the worker (or allow normal suspension) and check it still remains. Reload the extension or restart the browser and verify session configuration disappears. Local checks continue working. Do not keep worker DevTools open when testing idle suspension.
-5. Optionally save a key with **Remember this key on this browser** checked. Confirm only `privacyLensVtKey` is in local storage, no sync. Reload and verify Remember configuration remains, never prefilled. Saving again with Remember unchecked must remove the local copy and use session memory instead. Reconfigure once for the lookup tests.
-6. Visit a public legitimate site you already use, such as `https://www.google.com/`. Click **Check reputation with VirusTotal**. Verify the **exact hostname** appears with the sharing/dataset warning before any request. Press Cancel and confirm no request. Start again, confirm the hostname, and grant only the optional VirusTotal origin if Chrome prompts. Declining the grant must send nothing. If that browser prompt closes the popup, reopen PrivacyLens and confirm the hostname again; no lookup should start automatically.
-7. For a confirmed check, worker Network must show one GET to `https://www.virustotal.com/api/v3/domains/www.google.com` (or your displayed hostname), with no path/query/fragment from the visited site, no body, cookies or referrer. The API key is necessarily in the x-apikey header: do not copy/export/screenshot that header. On a harmless public page with a query/fragment, verify these are absent from the endpoint. Changing tabs/domains before confirming must abort the selected lookup or report changed context, never start another lookup automatically.
-8. Compare vendor counts/wording with the existing report if available. No clean result may say Safe or guarantee safety, and a local Review must remain Review. No existing report means no submission/rescan follows. Do not visit or submit a malicious/confidential domain; the offline suite covers suspicious counts and missing reports. If you have an already-public, harmless test indicator whose disclosure is acceptable, an optional lookup may exercise those responses; it is not required.
-9. Click another confirmed lookup promptly: expect a rate-limit message without a second request within 20 seconds. Wait and confirm again if desired. Account quota errors show a fixed 429 message and no automatic retry; do not consume your quota just to force 429. Offline mocks cover 429, 403, server failures and malformed JSON.
-10. For invalid-key behavior, replace the key with a deliberately invalid synthetic value and confirm one public hostname lookup if you choose; expect the fixed authentication message with no echoed key. A revoked key may also produce the account's normal auth error. Restore a fresh valid key locally afterward or Forget it. Use offline mock coverage instead if you do not want an extra external request.
-11. Close/reopen the popup: the reputation report must be gone and no lookup should recur. Close during a lookup and verify late data does not repaint/reopen the result. A request already received by VirusTotal cannot be recalled. No scan/reputation/history UI may exist. Other features can briefly retain their existing single temporary worker snapshot.
-12. Use **Forget key**. Verify both local and session key slots disappear, configuration is None, the field stays empty and the next Check button gives no-key guidance. Quota counters may remain as four anonymous numbers; Forget does not reset quota. Forget does not revoke the vendor key; revoke it at VirusTotal separately if desired.
-13. Inspect `chrome://extensions` and options/popup/worker errors. Verify no keys, raw response errors, form values or browsing data are logged. Network should contain only your confirmed domain GETs (ordinary page/browser traffic is separate). Application/Storage must have no domains, URL lists, reports, findings, inventories or download/navigation history. Only optional key slots and anonymous numerical session quota are permitted; no sync/localStorage/IndexedDB/cookies.
-14. Recheck URL/site/page/download/navigation/audit features, keyboard controls, light/dark appearance and scrolling. In private/local/IP tabs the external lookup should be declined without a request; do not enable private access solely for testing. Stop any local fixture server after use.
+This serves test pages only; PrivacyLens has no backend. Stop it afterward.
 
-## Earlier feature checklists
+- `http://127.0.0.1:8767/docs/fixtures/page-scan.html`
+- `http://127.0.0.1:8767/docs/fixtures/downloads.html`
+- `http://127.0.0.1:8767/docs/fixtures/navigation-direct.html`
+- `http://127.0.0.1:8767/docs/fixtures/navigation-client.html`
 
-The following checklists are historical references. For current regression testing use version **0.8.0**, Chrome **102+**, and the current manifest above. Their older zero-storage/network assertions now mean **no feature data storage or automatic requests**, with only the optional key, anonymous session counters and explicitly confirmed VirusTotal GET allowed. No local feature gained outbound requests.
+## Site permissions
 
----
+1. On a test site, compare Camera, Microphone, Location and Notifications with Chrome's site settings. Expand **More permissions** for Pop-ups and Automatic downloads.
+2. Change camera/location/notifications between Block, Ask/default and Allow; return to the website tab and reopen PrivacyLens. The effective state should match. Chrome does not identify default versus site-specific choices through this read API.
+3. Camera alone must remain conservative. Camera + microphone + location all Allowed should produce Review and an explanation, without a claim that access is being used.
+4. Restore the test site's settings when done.
 
-# Personal Chrome checks — Milestone 6
+## Page scan
 
-Use Chrome/Chromium 92+; use a current release to verify Chrome 106+ document matching. Offline mocks and a layout preview cannot prove real qualifier delivery or worker suspension.
+1. Expand Page. It should be Not checked until **Scan this page** is clicked.
+2. Scan a normal page and a normal same-origin login form. Routine password/login facts belong under **Other page details**, not among warnings.
+3. Scan the bundled page fixture. Check cross-origin form destinations and misleading link text. Warnings should appear before routine facts. **Scan coverage** retains the snapshot limits.
+4. Use only a synthetic marker if typing into the fixture. Confirm no input value or password appears in the UI or console. Automated throwing-getter tests separately guard against value reads.
+5. Close/reopen the popup: old page results must be gone. Page results have their own label; they do not silently change the overall address status.
 
-1. Pull origin/main normally if needed. Reload PrivacyLens at chrome://extensions, confirm **0.6.0**, and accept **webNavigation** if Chrome prompts. Exact permissions: activeTab, contentSettings, management, scripting, downloads, webNavigation. No history/webRequest/tabs or host grants.
-2. Opening an already-loaded tab after extension reload should show **Navigation details unavailable**, not a claim of direct navigation. No navigation-history view may exist.
-3. From the repository, run `python3 -m http.server 8768 --bind 127.0.0.1`. Visit `http://127.0.0.1:8768/docs/fixtures/navigation-direct.html` in the focused active tab and open PrivacyLens promptly, preferably within 30 seconds. Expect an observed **No redirect qualifier reported** for a fresh direct arrival, with Normal navigation. If the worker already stopped, reload the page and open promptly. Address-bar/Back/Forward qualifiers should be explained only when actually reported.
-4. Test an HTTP→HTTPS upgrade on an HTTPS site you already trust, for example the HTTP form of GitHub's address. Compare the landed address and Navigation section. Chrome's HTTPS-first/HSTS/internal upgrade may occur without a reported redirect qualifier: accept the actual browser signal rather than expecting a fabricated chain. A benign redirect alone must remain Normal.
-5. For a deterministic same-site server redirect fixture, on the direct page click **Try the local development server's directory redirect**. Python's development server adds the trailing slash to `/docs/fixtures` with a 301 response. Open PrivacyLens promptly and expect **Server redirect reported**, Normal, with no earlier-domain/hop list. This server is only a local test tool, not an extension backend.
-6. Return to the direct fixture, click **Try an ordinary same-site client redirect**, wait for its two-second refresh back to the direct page, then open PrivacyLens. Compare the **Client redirect reported** explanation. If both qualifiers appear, both must be shown separately without claiming an exact count. Expand explanations with keyboard and mouse.
-7. Try Back/Forward and type the fixture address into the address bar; reopen after each committed navigation. Chrome decides which qualifiers are present. Do not expect address-bar initiation to prove trust or Back/Forward to expose earlier records.
-8. Open/switch to another tab and then return. The single snapshot is discarded on switching: expect Unavailable until a new top-level navigation in the focused active tab. Never show another tab's domain or qualifiers. Close the fixture tab and open a new one; there must be no previous-tab or history list. Private tabs, if already permitted, should not produce navigation records; do not enable private access just for this check.
-9. Reload the direct fixture after a redirect: the new document should replace redirect details with its new qualifiers. Wait at least five minutes without navigating, or reload the extension, and confirm Unavailable. Worker shutdown may discard it sooner. Close worker DevTools when testing normal suspension because inspection can keep it alive. No document/tab/window ID should appear in normal UI.
-10. Inspect chrome://extensions and worker/popup consoles for errors without logging private URLs. In Network and Application/Storage, expect no extension-initiated HTTP(S) request and no saved navigation records. Page loads and the user's local fixture navigation are browser requests, not PrivacyLens requests. Check no chrome.storage/localStorage/IndexedDB data appears.
-11. Recheck URL warnings, site settings, page scans, downloads, and extension auditing; test light/dark mode, keyboard expansion and scrolling. Do not visit suspicious domains to manufacture signals; mocks cover those combinations. Stop the loopback server with Ctrl+C.
+## Navigation
 
----
+1. Visit the direct fixture in the focused active tab and open PrivacyLens promptly. If observed, expect **No redirect reported**. Missing/expired data says **No recent redirect info**, not proof that no redirect happened.
+2. Follow the direct fixture's directory-redirect link: Python adds the trailing slash with a 301 response. Expect a server redirect.
+3. Visit the client fixture and let its refresh return to the direct page. Expect a client redirect. Try Back/Forward and inspect the details when reported.
+4. A normal redirect alone stays Normal. Switch tabs/windows and confirm stale data becomes unavailable. No redirect-chain or navigation-history list should exist.
+5. Separately check a public HTTP→HTTPS upgrade in Google Chrome; browser upgrades/HSTS can affect what is reported.
 
-# Personal Chrome checks — Milestone 5
+## Download
 
-Use desktop Chrome/Chromium 92+ and harmless files only. Do not obtain actual malware, disable browser protection, accept a danger warning, or open an executable-looking fixture. Offline mocks/loopback preview cannot prove the real Chrome download events or worker lifecycle.
+1. Use the harmless download fixture to download its PDF. Open PrivacyLens promptly. Inspect the filename, Chrome warning and source.
+2. Download its plain text file named `invoice.pdf.exe`. Do not open it. Expect Review for the name/type, not a malware verdict. Size/type are under **File details**.
+3. Check again, then allow expiry or reload the extension. Only one temporary record may appear; there is no history or open/delete/cancel control. PrivacyLens never reads the payload.
 
-1. Pull origin/main normally if using another checkout. Open chrome://extensions and reload PrivacyLens. Confirm version **0.5.0** and accept the added **downloads** permission if prompted. Permissions must be exactly activeTab, contentSettings, management, scripting, downloads; no downloads.open/shelf/ui or storage permission.
-2. Open the popup before downloading. **Recent download check** should show **No recent PrivacyLens-observed download**. There must be no download-history list or file-control buttons.
-3. Serve this repository on loopback with `python3 -m http.server 8767 --bind 127.0.0.1`. Visit `http://127.0.0.1:8767/docs/fixtures/downloads.html`. This development server is for the fixture only; it is not an extension backend. The page has no external resources.
-4. Click **Download harmless PDF**. Open PrivacyLens promptly after the download (preferably within 30 seconds). If needed click **Check recent download**. Expect the basename, Chrome classification, local source, and calm guidance. With Chrome safe and no naming warning this should remain Normal. Expand **Details and guidance**; compare state, MIME and size with Chrome. Local HTTP is explained conservatively by the existing URL rules.
-5. Optionally download a PDF from an HTTPS source you already trust. Check that source domains/scheme match what Chrome reports. Do not assume HTTPS or complete state proves safety. A CDN hostname change alone should remain informational.
-6. From the fixture page, click **Download harmless text named invoice.pdf.exe**. This is plain text, not executable code. Do not open it. Inspect only Chrome/PrivacyLens metadata: expect executable-type and document-looking double-extension Review. Extension alone must not produce High Attention. Chrome may rename/block the file according to its own rules; compare the actual reported basename. Never override a Chrome warning to finish this test.
-7. Confirm PrivacyLens shows no local directory, full source URL path/query, timestamp, hash, or file contents. Inspect popup and worker consoles for errors or logged metadata. The fixture’s text payload must not appear as a scan result. UI must offer no cancel/delete/open/show/pause/resume/accept-danger control. Static/API-proxy tests also cover this read-only boundary.
-8. Close and reopen the popup promptly: it may show the same one temporary event if the worker still holds it. There must be no list/timeline. Wait at least five minutes without a new download, or reload the extension, then reopen: expect **No recent PrivacyLens-observed download**. Close worker DevTools when checking normal suspension; idle termination can discard it sooner, so absence is expected rather than a malfunction.
-9. Check Chrome’s own download UI against the displayed state. If you naturally receive a Chrome warning during ordinary safe use, compare the exact code/explanation without accepting it. Do not deliberately test malware or try to force browser danger states; mocks cover those cases.
-10. If PrivacyLens is already allowed in incognito, optionally download the harmless PDF there. Incognito popup checks should be empty, and the private filename must not appear in the regular check. Do not enable private access merely for this test. Unknown/private metadata is deliberately ignored.
-11. Check chrome://extensions for PrivacyLens errors. Inspect popup/worker DevTools Network and Application/Storage: only bundled resources should load, with no outgoing HTTP(S) requests or saved download records. The browser itself makes a request for the user’s chosen download; distinguish that from extension activity. No chrome.storage/localStorage/IndexedDB entries should be created.
-12. Recheck URL findings, site settings, page scans, and extension audit. Check keyboard expansion, narrow popup scrolling, and light/dark mode. Stop the loopback server with Ctrl+C. You may delete fixture downloads yourself through the browser/OS; PrivacyLens never does so.
+## Installed extensions
 
----
+1. Open **Review browser extensions**. Inspect a simple extension, a broad-access extension and one disabled manually in Chrome.
+2. Compare names, enabled state, permissions and warnings with `chrome://extensions`. PrivacyLens is excluded from scoring; apps/themes are omitted.
+3. Check search and all status filters. **Why this status**, **Permissions and Chrome warnings** and **Extension details** retain the explanations, exact permissions and technical fields.
+4. Close/reopen: the inventory is read again, with no audit history. PrivacyLens has no disable/uninstall controls.
 
-# Personal Chrome checks — Milestone 4
+## Optional VirusTotal
 
-These checks verify the real toolbar access grant and injection, which offline mocks and a layout preview cannot prove. Use desktop Chrome/Chromium 92+; prefer a current release.
+1. With no key, local checks must still work. Open settings: it should show the key field, Remember, Save, Forget and the key-use link. No key is prefilled.
+2. Enter a fresh key yourself, without copying it to chat or logs. Save with Remember unchecked. Saving must make no external request. Optionally test Remember, then reload and verify the stored mode without revealing the key.
+3. Expand Reputation and click **Check with VirusTotal**. Confirm the selected hostname and sharing notice appear first. Cancel: no lookup should occur.
+4. Confirm a known public domain only when you accept sharing. If Brave closes the popup during the optional host grant, reopen and confirm again. No automatic retry should occur.
+5. In Network, inspect the endpoint only: `https://www.virustotal.com/api/v3/domains/{hostname}`. A page's path/query/fragment must be absent. Do not export headers/HAR files containing the key.
+6. Check the four vendor counts and expandable explanation. The Privacy row must name VirusTotal and the hostname after sharing; a clean report must not remove local findings.
+7. Use a synthetic invalid key to check the error display. Mock tests cover 403/404/429/server failures; do not exhaust quotas just to test them.
+8. Close/reopen: the report must be gone. Forget removes local/session key copies without resetting anonymous quota counters. Finish by forgetting any test key and reloading the extension.
 
-1. Pull `origin/main` normally if using another checkout. Open `chrome://extensions`, reload PrivacyLens, and confirm **0.4.0**. Accept the added **scripting** permission if Chrome prompts. The manifest must contain only activeTab, contentSettings, management, scripting, without broad host grants.
-2. Visit `https://example.com` and open PrivacyLens. Before clicking, **Page scan** must say **No page scan yet**. Click **Scan this page**. Expect a fresh local snapshot; ordinary links/forms alone should not create an accusation. Expand a finding and check Detected, Why it matters, and Suggestion.
-3. Visit a login page you already trust, such as `https://accounts.google.com`, without entering credentials. Scan it. A recognized password field/same-origin login action alone must stay informational, not High Attention. Custom controls or cross-origin providers may produce different structural findings; compare the explanation with the page.
-4. Scan a familiar page with external links. Compare a few visible domain labels and destinations manually. A shortener or mismatched label should explain review, not claim phishing. Results must state that this is a snapshot and must not show destination query strings or credentials.
-5. From the repository folder, serve the bundled fixture locally with `python3 -m http.server 8767 --bind 127.0.0.1`. Open `http://127.0.0.1:8767/docs/fixtures/page-scan.html` in a regular tab. Do not open it as a file URL. This development server is only for the test page and is not part of PrivacyLens.
-6. Scan that fixture. Expect **Review**: two sensitive forms point to `receiver.example.invalid`, one password form stays here, the visible `paypal.com` link points to a different hostname, and shortener/IP/punycode links receive explanations. Do not click test links. The fixture blocks form submission. The inline iframe must be counted without reading its contents. HTTPS-to-HTTP combinations and cross-origin frame counts also have offline tests; this HTTP fixture does not exercise every rule.
-7. Enter only a made-up marker, such as `TEST-ONLY-DO-NOT-USE-A-REAL-PASSWORD`, into the fixture fields, then scan again. No marker or typed email/card/password/textarea content may appear in the popup or its console. Never use actual private data for this test. Link labels inside forms are deliberately skipped. Inspect the page if desired: the scan must not change its fields or submit anything.
-8. Close the popup and reopen it. Old page findings must be gone, with **No page scan yet** until another click. Scan again, close during a scan if possible, and reopen: no late result or history/timeline should appear. The separate extension-audit view must still work.
-9. Try **Scan this page** on `chrome://extensions` and a browser-protected page such as the Chrome Web Store. Expect Unavailable, without a fabricated result or private error text. Return to an ordinary page, reopen, and scan normally.
-10. Check `chrome://extensions` for errors. In popup DevTools, inspect Network and Application/Storage while scanning. Only bundled extension resources should load; there must be no outgoing HTTP(S) requests or saved scan records. In the fixture tab's DevTools Network panel, clear existing requests before clicking Scan and confirm no request is caused by PrivacyLens. Ordinary websites can independently make requests; distinguish these from extension activity.
-11. Check keyboard access, expanded explanations, light/dark mode, and scrolling. URL findings, Page scan, and Site permissions must remain visibly separate. Confirm there are no submission, blocking, disable/uninstall, tracking, or scan-history controls.
-12. Stop the temporary local test server with Ctrl+C when finished. Do not install extra extensions or change site settings solely for this milestone. Earlier milestone checks below remain useful for regression testing.
+## Accessibility, transparency and privacy
 
----
-
-# Personal Chrome checks — Milestone 3
-
-These real Chrome checks remain necessary; offline mocks and a layout preview cannot verify your installed extensions or Chrome's permission prompt. No third-party extension needs to be installed just for testing.
-
-1. Pull `origin/main` normally if testing in a different checkout. Open `chrome://extensions` and Reload PrivacyLens, or Load unpacked this folder if new. Confirm version 0.3.0.
-2. Accept the new **management** permission if Chrome prompts. Chrome may describe managing apps, extensions, and themes. PrivacyLens uses the API read-only.
-3. Open the PrivacyLens popup and click **Review browser extensions**. Confirm a separate audit tab opens.
-4. Confirm installed browser extensions appear. PrivacyLens itself, apps, and themes should be omitted; the summary explains this. Review counts include disabled extensions.
-5. Expand a simple extension, if you have one. Compare its name, state, API permissions, type, and version with **Details** in `chrome://extensions`. Storage/notifications/bookmarks alone should remain Normal.
-6. Expand an extension with broad website access, if available. Expect Review, a visible broad-host reason, and a host-pattern explanation. Read **Why this label** and the API explanations. Every label should have an understandable reason; no misuse accusation should appear.
-7. Compare displayed host access and Chrome-generated warnings with the permissions/site-access information in `chrome://extensions` → Details. Warning wording can be localized or grouped and may differ from that UI. The API may not reveal a complete original manifest, optional declarations, or every site-access control. Empty/unavailable warnings must be explained honestly.
-8. Manually disable one optional extension using Chrome's own control. Avoid disabling a tool you currently need. PrivacyLens itself must stay enabled.
-9. Close the audit and reopen it from the popup, or click **Read again**. The changed extension must say Disabled, with its capability label still shown and a note that this does not imply activity. Restore its prior enabled state manually in Chrome.
-10. Verify the audit offers only search, label filters, **Read again**, and explanation expansion. It must have no disable, uninstall, launch, settings-change, or permission-change control.
-11. Try each filter and a name search. Then close/reopen or reload the audit. Search/filter state must reset and a fresh read must replace the results. No audit-history UI or saved inventory may appear. Closing only the popup leaves the separate audit open until you close that tab.
-12. Check PrivacyLens in `chrome://extensions` for errors. In the audit's DevTools, inspect Network and Application/Storage: only bundled local resources should load, with no outgoing HTTP(S) requests or saved audit records. Check keyboard expansion, light/dark mode, a narrow window, and long names. Reopen the site popup to confirm URL findings and the six site settings still work.
-
-If the API or warnings are unavailable in your browser, expect a clear message rather than invented data. Follow [platform limits](platform-limits.md). Permissions describe capability, not proof of behavior.
-
----
-
-# Personal Chrome checks — Milestone 2
-
-Use a recent desktop Chrome/Chromium release (extension minimum: Chrome 88). These steps test actual browser permissions, which offline mocks cannot verify. No camera recording, location request, notification subscription, or file download is needed.
-
-1. Open `chrome://extensions`, enable Developer mode, and Load unpacked this `privacylens` folder. If already loaded, click Reload and handle Chrome's added `contentSettings` permission prompt if shown. Pin the toolbar icon.
-2. Visit a normal HTTPS site such as `https://example.com`. Open PrivacyLens. Expect the existing URL findings plus Camera, Microphone, Location, Notifications, Pop-ups, and Automatic downloads. Expand a row and read all five explanation parts.
-3. Close PrivacyLens. Click the site-information icon beside the address → **Site settings**. Set **Camera = Block**, **Location = Block**, and **Notifications = Block**. Return to the original website tab (not the settings tab), reload the site if Chrome requests it, and reopen PrivacyLens. All three should say Blocked.
-4. In the same site's settings, set **Camera = Allow**, keeping Microphone and Location blocked. Return and reopen PrivacyLens. Camera should say Allowed. On this normal HTTPS URL, camera alone must not change Normal to High Attention or claim misuse.
-5. Set **Location = Allow** and **Notifications = Allow**, then return and reopen. Their rows should update to Allowed. Notifications alone should not cause High Attention. Keep Microphone blocked for this step.
-6. Set Camera, Microphone, and Location all to **Allow** for this test site. Return and reopen. Expect **Review**, a separate permission note asking whether you still need these features, and unchanged URL findings. No spying or confirmed-phishing accusation should appear. Restore your preferred site settings after this test.
-7. For Camera/Location/Notifications, select **Ask** or **Ask (default)** if offered, or reset that individual override to the browser's current default. Return and reopen. Compare with Chrome's effective default: Ask if the default is Ask, Blocked if the default is Blocked. PrivacyLens must not guess an extra Default state. Do not change global defaults just to run this test.
-8. Compare **Pop-ups and redirects** set to Allow then Block: PrivacyLens should show Allowed then Blocked. Chrome's extension API has no Ask state for this setting. Compare **Automatic downloads** set to Ask, Allow, and Block. No download needs to be started; the row reads the multiple-files setting only.
-9. Try a restricted page such as `chrome://extensions` or a file page. Expect URL assessment unavailable and six Unavailable permission rows. Return to the normal website, close/reopen, and confirm the new scan replaces the old one. There must be no scan-history UI.
-10. On `chrome://extensions`, check PrivacyLens for errors. Right-click the popup → Inspect and look for script/API errors. In its Network panel, only local extension resources should load, with no extension-initiated HTTP(S) requests. Storage must contain no scan records. Verify the manifest has exactly `activeTab`, `contentSettings`, and `management`, no host patterns or background worker.
-11. Test keyboard expansion, long hostnames, system light/dark mode, and scrolling. Chrome limits popup height, so expanded explanations must remain reachable by scrolling.
-
-If a Chromium derivative reports a row as Unavailable, compare against its own site-settings page and read [platform limits](platform-limits.md). An Allowed setting describes the browser's content setting, not current feature use or a guarantee that device access succeeds. Temporary one-time grants and embedded-frame settings may not be fully represented.
-
-## URL regression checks
-
-Open `https://google.com` and `https://accounts.google.com`: no Google brand mismatch. HTTPS explanation must not guarantee trust. HTTP alone on a public test page means Review, not malware. Local HTTP/custom ports get development context. Close/reopen on another tab to refresh.
-
-Do not visit lookalike domains merely to test warnings. Use the offline suite for synthetic lookalike, IP, punycode, shortener, malformed-address, and sensitive-word examples.
+1. Use Tab, Enter and Space for links, buttons and native disclosures. Check visible focus and textual statuses in light/dark mode. A full VoiceOver pass remains a separate manual task.
+2. Open About & privacy. Check all seven permissions, optional VirusTotal access, nine data-boundary rows, key handling and limitations. Follow the settings key-use link to its section.
+3. Inspect popup/background Console: no errors or raw secrets. Inspect Network before and after consent: bundled assets and only explicitly requested VirusTotal calls; no analytics or other endpoints.
+4. Inspect storage by slot names without displaying secrets. Expected: optional `privacyLensVtKey` in session or explicitly chosen local storage, and `privacyLensVtQuota` in session. No sync writes, domains, reports, page contents, inventories, downloads or browsing history.
+5. Close/reopen the popup, switch tabs, reload pages and let the background process stop where practical. No scan-history UI or stale result should return.
+6. Repeat in Google Chrome and after a full browser restart before claiming those cases tested. Restore test settings, forget keys, stop the fixture server and close temporary preview tabs.
