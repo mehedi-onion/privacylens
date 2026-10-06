@@ -28,6 +28,13 @@
       <div id="page-scan-findings"></div>
       <p class="permission-context">Closing the scan view discards the result. Here, the scan view is this popup.</p>
     </section>
+    <section aria-labelledby="download-heading">
+      <h2 class="section-title" id="download-heading">Recent download check</h2>
+      <p class="permission-context">PrivacyLens observes download metadata only to explain the current event. It does not keep a download history.</p>
+      <div id="download-check" role="status">No recent PrivacyLens-observed download.</div>
+      <button id="read-download" type="button">Check recent download</button>
+      <p class="permission-context">One temporary check, for up to five minutes. It may be unavailable when Chrome stops the worker. No files are read or changed.</p>
+    </section>
     <section aria-labelledby="permissions-heading">
       <h2 class="section-title" id="permissions-heading">Site permissions</h2>
       <p class="permission-context" id="permissions-context">Reading browser settings…</p>

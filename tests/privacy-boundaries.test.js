@@ -12,12 +12,13 @@ async function sourceFiles(directory) {
   return groups.flat();
 }
 
-test('manifest has only activeTab/contentSettings/management/scripting and blocks outgoing connections', async () => {
+test('manifest has only activeTab/contentSettings/management/scripting/downloads and blocks outgoing connections', async () => {
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
   assert.equal(manifest.manifest_version, 3);
-  assert.deepEqual(manifest.permissions, ['activeTab', 'contentSettings', 'management', 'scripting']);
+  assert.deepEqual(manifest.permissions, ['activeTab', 'contentSettings', 'management', 'scripting', 'downloads']);
   assert.equal(manifest.minimum_chrome_version, '92');
-  for (const field of ['host_permissions', 'optional_permissions', 'optional_host_permissions', 'background', 'content_scripts', 'externally_connectable', 'web_accessible_resources']) {
+  assert.deepEqual(manifest.background, { service_worker: 'src/background/service-worker.js', type: 'module' });
+  for (const field of ['host_permissions', 'optional_permissions', 'optional_host_permissions', 'content_scripts', 'externally_connectable', 'web_accessible_resources']) {
     assert.equal(manifest[field], undefined, field);
   }
   assert.match(manifest.content_security_policy.extension_pages, /connect-src 'none'/);

@@ -3,6 +3,8 @@ import { renderResult } from './popup-view.js';
 import { readSitePermissions } from '../permissions/site-permission-reader.js';
 import { advisePermissions } from '../permissions/permission-advisor.js';
 import { createPageScanController } from '../page/page-controller.js';
+import { createDownloadController } from '../downloads/download-controller.js';
+import { renderDownloadCheck, clearDownloadCheck } from '../downloads/download-view.js';
 
 export async function scanCurrentTab(chromeApi, document, { signal } = {}) {
   let tab;
@@ -31,11 +33,15 @@ export function clearPopup(document) {
 if (typeof chrome !== 'undefined' && typeof document !== 'undefined') {
   const lifecycle = new AbortController();
   const pageScan = createPageScanController(chrome, document, { signal: lifecycle.signal });
+  const downloadCheck = createDownloadController(chrome, document, renderDownloadCheck, clearDownloadCheck, { signal: lifecycle.signal });
   document.getElementById('scan-page').addEventListener('click', () => void pageScan.scan());
+  document.getElementById('read-download').addEventListener('click', () => void downloadCheck.read());
+  void downloadCheck.read();
   void scanCurrentTab(chrome, document, { signal: lifecycle.signal });
   window.addEventListener('pagehide', () => {
     lifecycle.abort();
     pageScan.clear();
+    downloadCheck.clear();
     clearPopup(document);
   }, { once: true });
 }

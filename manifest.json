@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
   "name": "PrivacyLens",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "minimum_chrome_version": "92",
-  "description": "Understand URL signals, site settings, extension permissions, and page structure locally. No history saved.",
-  "permissions": ["activeTab", "contentSettings", "management", "scripting"],
+  "description": "Local privacy checks for websites, extensions, page structure, and current download metadata. No history saved.",
+  "permissions": ["activeTab", "contentSettings", "management", "scripting", "downloads"],
+  "background": { "service_worker": "src/background/service-worker.js", "type": "module" },
   "action": {
     "default_title": "PrivacyLens — review this address",
     "default_popup": "src/popup/popup.html"

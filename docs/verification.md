@@ -1,3 +1,29 @@
+# Milestone 5 verification
+
+Verified October 7, 2026 against published Milestone 4 commit `e1416c259a9d47591e679133149d2a79233b1b58`.
+
+## Automated and privacy checks
+
+- `node --test`: **147 passed, 0 failed**. All 106 baseline checks remain, with manifest expectations updated for the download permission/worker. The 41 download tests cover the current 24 Chrome danger values, unknown/unsupported spellings, safe PDFs/archives, installers, naming patterns, HTTP/source changes, missing/malformed fields, metadata whitelisting, incognito rejection, ID-only event lookups, error/race/erasure handling, worker recreation, five-minute cleanup, message access, UI expiry/closure, text-only rendering, and API guardrails.
+- Exact permissions: activeTab, contentSettings, management, scripting, downloads. Minimum Chrome remains 92; downloads.search and runtime messaging use callbacks. The only background work is synchronous registration for download creation/change/erasure plus the popup’s authenticated local read message.
+- The downloads adapter uses only event listener registration/removal and search with exactly one event ID. Proxy tests reject all other methods. No startup/history query, polling, persistent ID list, file-content/hash access, or download-management call exists.
+- One sanitized worker record is replaced on each accepted event and cleared by a one-shot timer, browser erasure, worker shutdown or reload. No storage API is introduced. Popup results expire within their remaining lifetime and clear on pagehide; delayed reads cannot restore closed/expired/erased records.
+- Incognito records are rejected before filenames and sources are inspected or retained. Absolute paths, credentials, URL paths/queries/fragments, referrers, download timestamps and unneeded fields are discarded. Only basenames and source origins/domain explanations are temporarily kept; raw browser errors are never logged.
+- Filename or installer type alone never produces High Attention. Uncommon and enterprise/unknown states plus an installer remain Review. Only a documented strong Chrome warning plus another filename/source review signal reaches High Attention. Different final hostnames and normal archives alone remain informational.
+- Syntax checks pass for all 35 JavaScript files; JSON/local-reference checks and Git whitespace checks pass. Source scans find no outgoing request APIs, persistence, telemetry, file reads/hashing, management mutations, or downloads mutations. Secret scan covers tracked/new files for VirusTotal-style keys, tokens, real passwords, private keys and credentials; synthetic fixtures are reviewed explicitly.
+
+## Browser checks
+
+The actual popup and worker observer/model were exercised on loopback with synthetic Chrome events and local messaging under the manifest’s strict CSP. Verified the empty state, safe PDF Normal, uncommon installer Review, warning-plus-double-extension High Attention, metadata/guidance expansion, replacement, and erasure returning to empty. No real download metadata was read and no browser danger state was triggered. The temporary harness is outside the repository; its tab and server were closed after testing. This does not test a real MV3 worker’s lifecycle.
+
+Real Chrome permission acceptance, downloaded metadata, callback events, worker suspension, incognito behavior and Network/Storage checks still require [the manual checklist](manual-testing.md). Harmless local fixtures include a simple PDF and plain text with an executable-looking download name; no dangerous contents are used. No live browser danger classification is manufactured by the extension.
+
+## Git scope
+
+Milestone 5 is a separate commit after `e1416c2` with message `feat: add local download safety awareness`. Publication uses a normal push to origin/main, never force push. No VirusTotal, file upload, antivirus, backend, or later milestone is included.
+
+---
+
 # Milestone 4 verification
 
 Verified October 7, 2026 against published Milestone 3 commit `c9e9a553998176a1b3781c7a3fdb7e8b1e04cc2c`.

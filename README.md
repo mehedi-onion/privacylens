@@ -2,7 +2,7 @@
 
 **Understand what websites and browser extensions can access before you trust them.**
 
-PrivacyLens is an early privacy-oriented browser extension prototype. **Milestone 4** analyzes the current URL locally, reads current-site content settings where Chrome allows it, audits installed-extension permissions, and scans current-page structure only when you ask. All explanations are local. It does not maintain browsing history, save an extension inventory, or store page scans.
+PrivacyLens is an early privacy-oriented browser extension prototype. **Milestone 5** analyzes the current URL locally, reads current-site content settings where Chrome allows it, audits installed-extension permissions, scans current-page structure only when you ask, and explains the latest temporarily observed download event. All explanations are local. It does not maintain browsing history, save an extension inventory, store page scans, or keep a download history.
 
 **See → Understand → Decide → Forget.**
 
@@ -18,8 +18,9 @@ It analyzes signals, not intent. A warning means **“review this”**, not **�
 6. Expand a URL finding or site-permission row to read its explanation.
 7. Click **Review browser extensions** to open the separate extension audit. Expand an extension for its permissions, explanations, and Chrome warnings. Search by name or filter by review label locally.
 8. Click **Scan this page** to inspect the current top-level page’s structural metadata. Expand a finding for its reason and suggestion. Closing the popup discards this page scan.
+9. After downloading a file, open the popup promptly and inspect **Recent download check**. Use **Check recent download** for a fresh read of the current temporary record.
 
-No installation command, build step, packages, or account are required. Reload when upgrading and accept added permissions if Chrome prompts. Milestone 4 adds `scripting`; the function-injection API requires Chrome 92. The existing `management` permission may say it can manage apps, extensions, and themes because it includes mutation capabilities. PrivacyLens deliberately uses only its read APIs. The existing `contentSettings` permission also bundles reading and writing; this code only reads settings.
+No installation command, build step, packages, or account are required. Reload when upgrading and accept added permissions if Chrome prompts. Milestone 5 adds `downloads`; Milestone 4’s function-injection API still requires Chrome 92. The existing `management` permission may say it can manage apps, extensions, and themes because it includes mutation capabilities. PrivacyLens deliberately uses only its read APIs. The existing `contentSettings` permission also bundles reading and writing; this code only reads settings.
 
 ## What it shows
 
@@ -69,12 +70,13 @@ The audit label is separate from the current website's status. Chrome warnings a
 | `contentSettings` | Read the six existing browser settings for the current site's origin. Chrome bundles read/write capability; this code calls only `get`, never `set` or `clear`. | Camera video, microphone audio, coordinates, notification contents, or download events. It does not turn PrivacyLens into a device or activity monitor. |
 | `management` | Read other installed extensions and their permission warnings for the audit. No narrower read-only permission exposes this inventory. | This implementation does not disable, uninstall, launch, change extensions, or modify permissions. The permission itself also permits management actions, so read-only behavior is a code boundary. |
 | `scripting` | Run one bundled, read-only DOM collector in the active tab’s top frame after **Scan this page**. It works with temporary `activeTab` access; no persistent host permissions are needed. | This implementation does not modify pages, submit forms, read field values, inspect frame documents, inject CSS, register persistent scripts, or monitor page changes. The permission can support changes in other code; read-only behavior is enforced here. |
+| `downloads` | Observe Chrome download events and read metadata only for the ID in a relevant change event. No narrower permission supplies these events. | This code never initiates, cancels, pauses, resumes, opens, reveals, deletes, accepts danger, or changes download UI. The permission also grants broader management/history access, so read-only behavior is enforced in code. No `downloads.open`, `downloads.shelf`, or `downloads.ui` permission is requested. |
 
 There is no read-only variant of `contentSettings`; do not interpret this manifest permission as technically incapable of changing settings. Read-only behavior is enforced by the implementation and verified with mocked setter methods that must never be called.
 
 The audit adapter calls only `getAll()` and `getPermissionWarningsById()`. Management mutations are forbidden: `setEnabled`, `uninstall`, `uninstallSelf`, `launchApp`, `createAppShortcut`, `generateAppForLink`, `setLaunchType`, and `installReplacementWebApp`. There are no extension-event listeners, polling, or background monitoring. Mock tests reject any management method outside the two read calls.
 
-References: [management](https://developer.chrome.com/docs/extensions/reference/api/management), [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns), [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [contentSettings](https://developer.chrome.com/docs/extensions/reference/api/contentSettings), [scripting](https://developer.chrome.com/docs/extensions/reference/api/scripting), [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts).
+References: [management](https://developer.chrome.com/docs/extensions/reference/api/management), [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns), [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [contentSettings](https://developer.chrome.com/docs/extensions/reference/api/contentSettings), [scripting](https://developer.chrome.com/docs/extensions/reference/api/scripting), [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts), [downloads](https://developer.chrome.com/docs/extensions/reference/api/downloads).
 
 ## On-demand page scan
 
@@ -97,16 +99,41 @@ The page label is separate from the URL/site-permission label. There are no perc
 
 The snapshot processes at most 50 forms, 100 controls per form, 400 inputs, 400 links, 200 distinct destination/label patterns, 100 iframes, 400 resource references, and 100 external hostnames. Repeated destinations on the same origin with the same label metadata are grouped; different paths are deliberately not retained. A visible note appears when a limit is reached. Hidden link labels, shadow DOM, frame contents, redirects, and loaded network activity are outside this snapshot. Restricted browser/Web Store pages may prevent injection and show **Unavailable**, not an invented result.
 
+## Download safety awareness
+
+**PrivacyLens observes download metadata only to explain the current event. It does not keep a download history.** Chrome’s download history remains Chrome’s own record; PrivacyLens does not list or copy it.
+
+A minimal module service worker listens synchronously for `downloads.onCreated`, relevant `onChanged` deltas (danger, filename, source/final URL, MIME, size, paused, state), and `onErased` to discard an erased record. Creation supplies metadata directly. A relevant change performs only `downloads.search({ id })` for that event ID, allowing a new worker to recover the current event without a stored ID list. There are no startup/history-list searches, polling, keep-alive ports, browsing listeners, or notifications. Chrome’s metadata search can cause Chrome itself to refresh file-existence metadata; PrivacyLens does not inspect file contents.
+
+Only **one** sanitized record is held in worker memory: basename, source origins/domains, browser danger/status/type/size, filename flags, and an internal ID for matching erasure. Full paths, URL credentials/paths/queries/fragments, referrers, start/end times, hashes, and unneeded fields are discarded. Incognito items are rejected before filenames and sources are read or retained. The download UI also declines reads in incognito or unknown tab contexts.
+
+Each accepted event replaces the record and starts a single five-minute cleanup timer. Worker shutdown erases it sooner; Chrome normally stops idle workers after about 30 seconds. Popup opening/refresh reads that memory without querying downloads. The UI clears on closing and has its own expiry bounded by the remaining lifetime. Reopening may briefly show the same current record while the worker still holds it, but there is no list, timeline, or persistent history. After expiry, shutdown, or reload it says **No recent PrivacyLens-observed download** unless another usable event occurs. A delayed change event can produce a new check for its own ID. This availability limitation deliberately avoids adding storage/session permissions.
+
+| Signal | Treatment |
+| --- | --- |
+| Chrome `safe`, ordinary HTTPS PDF | Normal unless another rule matches; no guarantee of safety. |
+| Chrome `file`, `url`, `content`, `host`, `unwanted` | Explain Chrome’s reported warning; Review by itself. PrivacyLens does not independently verify it. |
+| Chrome `uncommon` or `accepted` | Review; uncommon does not prove misuse, and acceptance does not establish safety. |
+| Documented enterprise/security workflow values | Show the exact code with generic policy/version guidance; do not guess unspecified meanings. |
+| Unknown/unavailable danger code | Honest Review fallback. Example spellings `dangerous`, `dangerous_url`, `dangerous_content` are not current Chrome DangerType values. |
+| `.exe`, `.msi`, `.bat`, `.cmd`, `.scr`, `.ps1`, `.js`, `.jar`, `.apk`, `.dmg`, `.pkg` | Review whether the runnable/installer type fits what you expected; extension alone never causes High Attention. |
+| `.zip`, `.rar`, `.7z`, `.iso` | Informational archive/disk-image explanation; contents are not examined. |
+| Document/image extension before a runnable extension, five or more spaces before the final extension, directional Unicode controls | Explain the naming signal with Review. Directional controls are displayed as visible escapes; ordinary non-English letters alone are not flagged. |
+| Original/final source URL signals | Reuse local hostname rules. Public HTTP gets Review; different final hosts alone are informational because CDNs are common. No redirect chain is inspected. |
+| Strong browser warning plus another filename/source Review signal | High Attention with a visible combination reason. `uncommon`, unknown, or policy codes plus an installer stay Review. |
+
+Download status is separate from website/page/extension status. Transfer state, paused state, reported MIME and size are descriptive; completion and a MIME label do not establish safety. `fileSize = -1` or invalid/missing size appears as Unknown. Non-HTTP sources or malformed addresses limit domain comparisons. The scanner cannot know whether you trust or expected a source, determine OS file associations, inspect archive contents, or confirm a file’s real type. It never reads bytes, hashes, uploads, opens files, overrides warnings, or makes an antivirus/malware claim. Use only harmless fixtures for [manual testing](docs/manual-testing.md).
+
 ## Privacy
 
-All URL analysis, setting reads, extension auditing, and page scans happen locally. Chrome itself stores its existing site settings; **PrivacyLens only reads them**.
+All URL analysis, setting reads, extension auditing, page scans, and download metadata explanations happen locally. Chrome itself stores its existing site settings; **PrivacyLens only reads them**.
 
 - No persistent host patterns, `tabs`, storage, history, or network-monitoring permissions.
-- No background worker, automatic/persistent content script, server/backend, account, analytics, AI API, CDN, API keys, or secrets. The only page injection is the one-shot collector after your click.
+- One minimal event-driven download worker; no browsing monitoring, automatic/persistent content script, server/backend, account, analytics, AI API, CDN, API keys, or secrets. The only page injection is the one-shot collector after your click.
 - No outgoing network requests. `connect-src 'none'` applies to all extension pages; scripts/styles/data are bundled locally.
 - No saved domains, permission states, findings, timestamps, installed-extension names, IDs, permissions, host access, inventories, or history. No visited URLs or settings are transmitted.
-- The reader sends only the origin to the browser's local API; it drops credentials, paths, query values, and fragments. No raw addresses or API errors are logged.
-- Scan data exists only in popup memory and rendered text. Closing it discards the scan, clears its display, and prevents pending reads from repainting it. Reopening performs a fresh check.
+- The site-setting reader sends only the origin to the browser's local API; it drops credentials, paths, query values, and fragments. No raw addresses or API errors are logged.
+- Website/page scan data exists only in popup memory and rendered text. Closing it discards the scan, clears its display, and prevents pending reads from repainting it. Reopening performs a fresh check.
 
 The audit keeps one snapshot in page memory and rendered text. Closing the view clears it and prevents late reads from repainting. Reloading or using **Read again** performs a fresh read and replaces the previous result. Filters use memory only; they do not query Chrome or save the search. No cookies or persistence APIs are used.
 
@@ -120,7 +147,7 @@ Use Node.js 22 or newer from this folder:
 node --test
 ```
 
-If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, and source privacy guardrails.
+If npm is installed, `npm test` runs the same suite. Tests use Node's built-in runner with mocked Chrome APIs, no packages and no live network access. They cover URL rules, permission definitions and normalization, unsupported/default/malformed results, risk integration, read-only API use, incognito query scope, popup clearing, extension inventory normalization, host scope, conservative audit rules, generated warning display, filters, audit clearing/races, page structure/destination rules, caps, malformed snapshots, serialized injection, input-value privacy, explicit-click lifecycle, download danger/filename/source rules, incognito filtering, event-only ID lookups, expiry, worker recreation, local messaging, and source privacy guardrails.
 
 ## Files to learn
 
@@ -136,6 +163,13 @@ src/analysis/risk-model.js                 URL label rules
 src/permissions/site-permission-reader.js  Chrome content-settings adapter
 src/permissions/permission-definitions.js  Explanation text and supported states
 src/permissions/permission-advisor.js      Conservative advice/status integration
+src/background/service-worker.js          Download-only event registration and local message access
+src/downloads/danger-definitions.js        Documented Chrome classifications and fallbacks
+src/downloads/filename-rules.js            Explainable basename heuristics
+src/downloads/download-analyzer.js         Whitelist/sanitization and local download advice
+src/downloads/download-observer.js         One temporary event and read-only browser adapter
+src/downloads/download-controller.js       Popup read, expiry and closure
+src/downloads/download-view.js             Calm text-only download explanation
 src/page/page-collector.js                 One-shot structural DOM collection
 src/page/page-reader.js                    Chrome injection adapter
 src/page/page-analyzer.js                  Local page rules and aggregate findings
@@ -155,13 +189,16 @@ docs/rules.md                             URL thresholds and limitations
 docs/platform-limits.md                    API evidence and scope
 docs/manual-testing.md                    Personal Chrome checks
 docs/fixtures/page-scan.html               Local structural test page
+docs/fixtures/downloads.html               Harmless download test links
+docs/fixtures/download-sample.pdf          Simple harmless PDF
+docs/fixtures/download-sample.txt          Plain-text naming fixture
 docs/verification.md                      Verification record
 ```
 
-Chrome API access stays separate from explanation and analysis logic. There is no background folder because no background work is needed.
+Chrome API access stays separate from explanation and analysis logic. The background worker observes only the documented download events; all other features keep their existing on-demand behavior.
 
 ## Scope and limitations
 
-Milestone 4 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirects, download events, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, VirusTotal, fuzzy matching, or offensive security features.
+Milestone 5 does not inspect extension source, actual extension behavior, typed form contents, embedded-frame documents, TLS certificates, redirect chains, file contents, or actual camera/microphone/location activity. It does not verify publisher identity, Web Store reputation, or every original/optional permission declaration. It has no history/timeline, cloud storage, backend, VirusTotal, fuzzy matching, or offensive security features.
 
 The URL reference lists remain deliberately small. Permission settings are top-level-site snapshots; inherited defaults, one-time grants, OS rules, embedded frames, and Chromium derivatives can limit what the API tells us. Missing data is shown honestly as Unavailable. See [platform limits](docs/platform-limits.md) and [manual testing](docs/manual-testing.md).

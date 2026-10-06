@@ -1,0 +1,2 @@
+# Preserve PDF byte offsets and keep binary fixture data out of text diffs.
+docs/fixtures/*.pdf binary

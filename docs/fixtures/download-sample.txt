@@ -1,0 +1,4 @@
+PrivacyLens harmless manual download fixture.
+This file contains plain text only, with no executable instructions.
+The manual test gives it an executable-looking filename; do not open it.
+This payload must never appear in PrivacyLens scan results.

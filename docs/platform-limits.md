@@ -1,3 +1,50 @@
+# Milestone 5 platform check
+
+Checked before implementation on October 7, 2026 against official [downloads](https://developer.chrome.com/docs/extensions/reference/api/downloads), [worker events](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/events), [worker lifecycle](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle), [module workers](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/basics), [runtime messaging](https://developer.chrome.com/docs/extensions/reference/api/runtime), and [incognito](https://developer.chrome.com/docs/extensions/reference/manifest/incognito) documentation.
+
+## API and minimum permission
+
+The only new permission is **downloads**. It supplies onCreated/onChanged/onErased events and the read-only `search({ id }, callback)` metadata lookup. No downloads.open, downloads.shelf, downloads.ui, storage, notifications, or host permission is added. Minimum Chrome stays **92**. finalUrl and its delta are documented from Chrome 54; core fields/events predate this baseline. Promise forms of downloads.search start at Chrome 96, so this code uses callbacks and consumes runtime.lastError without displaying/logging raw errors. Runtime messaging also uses callbacks.
+
+The downloads permission bundles more than observation: it can initiate/manage downloads and query Chrome’s download history. There is no narrower event-only permission. Read-only behavior is enforced in code and API-proxy tests, not by the permission itself. PrivacyLens never calls download, cancel, erase, removeFile, open, show, pause, resume, setShelfEnabled, setUiOptions, acceptDanger, getFileIcon, or showDefaultFolder; it never registers onDeterminingFilename or suggests names.
+
+## Exposed metadata and selection
+
+| Chrome field | PrivacyLens treatment |
+| --- | --- |
+| id | One internal identifier for the current event’s lookup/erasure; omitted from normal UI and responses. No ID list. |
+| incognito | Required to be false. Incognito or unknown scope is discarded before filenames/sources are read. The popup also skips download reads in private/unknown tab contexts. |
+| filename | Chrome supplies an absolute path. Immediately reduce to basename, flag structural patterns, and escape directional/control formatting. No directory path is retained. |
+| url / finalUrl | Original and final source after Chrome’s redirects. Retain only origin/domain/scheme and local URL-rule findings. No credentials, path, query, fragment, or redirect chain. |
+| danger | Browser-reported classification, not PrivacyLens’s file assessment. See values below. |
+| state | in_progress, interrupted, complete; otherwise Unavailable. Completion describes transfer, not safety. |
+| mime | Sanitized browser-reported type only; no byte-based type verification or mismatch inference. |
+| fileSize | Byte count after decompression; -1 means unknown. Invalid/missing counts also show Unknown. |
+| paused | Boolean reported status; malformed/missing becomes Unavailable. |
+| referrer, start/end/estimated times, bytesReceived, exists, hashes and other fields | Not retained or used for scoring. No file reading or hashing. |
+
+onCreated supplies a DownloadItem when a download starts; a filename/size/danger may change later. onChanged supplies a delta and ID rather than a complete item. Relevant deltas cause a **single ID-only query for that event**, even after worker restart. There is no empty-query search, historical list, newest-by-time search, backfill on popup opening, or timer-based polling. Chrome’s own metadata search can refresh its file-existence information. Those exists-only deltas are ignored to avoid a feedback loop; PrivacyLens does not read file contents. onErased clears the matching temporary check and invalidates pending reads.
+
+## Actual Chrome danger values
+
+Core documented values: `safe`, `file`, `url`, `content`, `uncommon`, `host`, `unwanted`, `accepted`. The current API does **not** document `dangerous`, `dangerous_url`, or `dangerous_content`; these use the unknown-value fallback instead of fabricated aliases.
+
+Other current documented values: `allowlistedByPolicy`, `asyncScanning`, `asyncLocalPasswordScanning`, `passwordProtected`, `blockedTooLarge`, `sensitiveContentWarning`, `sensitiveContentBlock`, `deepScannedFailed`, `deepScannedSafe`, `deepScannedOpenedDangerous`, `promptForScanning`, `promptForLocalPasswordScanning`, `accountCompromise`, `blockedScanFailed`, `forceSaveToGdrive`, `forceSaveToOnedrive`.
+
+Availability and policy behavior vary by Chrome version/organization. Where the reference only names a workflow value, PrivacyLens shows that exact code and generic policy/version guidance without inferring more. Unknown/malformed values are explained conservatively. Only file/url/content/host/unwanted warnings can combine with another filename/source review signal for High Attention. Uncommon, accepted, enterprise and unknown classifications do not automatically get that combination label.
+
+## Worker and privacy tradeoff
+
+A bundled module worker registers the three listeners synchronously during top-level startup. It stores one sanitized object and an internal expiry deadline in ordinary memory; there are no storage APIs. Each accepted event replaces the object and schedules one cleanup after five minutes. There is no periodic task or attempt to keep the worker alive. A relevant change after shutdown can create a new current-event check from its ID; previous events are not reconstructed.
+
+Chrome normally terminates an idle worker after roughly 30 seconds, losing global variables. A popup read wakes it but cannot recover a lost record without a new download event; it honestly shows **No recent PrivacyLens-observed download**. Popup results also expire within their remaining lifetime and clear on closure. While the worker still has the record, reopening may briefly display the same check. This is deliberate limited availability rather than persistent history. Keeping worker DevTools open can alter termination behavior during testing.
+
+Messages are accepted only from the exact PrivacyLens popup URL and its extension ID. No external messaging, open port, notifications, network, telemetry, or browser-navigation subscription is used. The default incognito mode is not changed or enabled. If Chrome delivers a private item, its metadata is discarded; a changed-event ID lookup may be necessary to learn its incognito flag before discarding it. Incognito items are never cached or shown.
+
+The tool cannot know user expectations or trust, inspect file bytes or archives, determine OS file associations, independently verify Chrome warnings, or guarantee protection. Browser derivatives can differ; Firefox/mobile support is not promised. Normal remains a limited signal result, never a safety guarantee.
+
+---
+
 # Milestone 4 platform check
 
 Checked before implementation on October 7, 2026 against official Chrome documentation for [activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [scripting](https://developer.chrome.com/docs/extensions/reference/api/scripting), and [content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts).

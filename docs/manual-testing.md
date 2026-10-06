@@ -1,3 +1,22 @@
+# Personal Chrome checks — Milestone 5
+
+Use desktop Chrome/Chromium 92+ and harmless files only. Do not obtain actual malware, disable browser protection, accept a danger warning, or open an executable-looking fixture. Offline mocks/loopback preview cannot prove the real Chrome download events or worker lifecycle.
+
+1. Pull origin/main normally if using another checkout. Open chrome://extensions and reload PrivacyLens. Confirm version **0.5.0** and accept the added **downloads** permission if prompted. Permissions must be exactly activeTab, contentSettings, management, scripting, downloads; no downloads.open/shelf/ui or storage permission.
+2. Open the popup before downloading. **Recent download check** should show **No recent PrivacyLens-observed download**. There must be no download-history list or file-control buttons.
+3. Serve this repository on loopback with `python3 -m http.server 8767 --bind 127.0.0.1`. Visit `http://127.0.0.1:8767/docs/fixtures/downloads.html`. This development server is for the fixture only; it is not an extension backend. The page has no external resources.
+4. Click **Download harmless PDF**. Open PrivacyLens promptly after the download (preferably within 30 seconds). If needed click **Check recent download**. Expect the basename, Chrome classification, local source, and calm guidance. With Chrome safe and no naming warning this should remain Normal. Expand **Details and guidance**; compare state, MIME and size with Chrome. Local HTTP is explained conservatively by the existing URL rules.
+5. Optionally download a PDF from an HTTPS source you already trust. Check that source domains/scheme match what Chrome reports. Do not assume HTTPS or complete state proves safety. A CDN hostname change alone should remain informational.
+6. From the fixture page, click **Download harmless text named invoice.pdf.exe**. This is plain text, not executable code. Do not open it. Inspect only Chrome/PrivacyLens metadata: expect executable-type and document-looking double-extension Review. Extension alone must not produce High Attention. Chrome may rename/block the file according to its own rules; compare the actual reported basename. Never override a Chrome warning to finish this test.
+7. Confirm PrivacyLens shows no local directory, full source URL path/query, timestamp, hash, or file contents. Inspect popup and worker consoles for errors or logged metadata. The fixture’s text payload must not appear as a scan result. UI must offer no cancel/delete/open/show/pause/resume/accept-danger control. Static/API-proxy tests also cover this read-only boundary.
+8. Close and reopen the popup promptly: it may show the same one temporary event if the worker still holds it. There must be no list/timeline. Wait at least five minutes without a new download, or reload the extension, then reopen: expect **No recent PrivacyLens-observed download**. Close worker DevTools when checking normal suspension; idle termination can discard it sooner, so absence is expected rather than a malfunction.
+9. Check Chrome’s own download UI against the displayed state. If you naturally receive a Chrome warning during ordinary safe use, compare the exact code/explanation without accepting it. Do not deliberately test malware or try to force browser danger states; mocks cover those cases.
+10. If PrivacyLens is already allowed in incognito, optionally download the harmless PDF there. Incognito popup checks should be empty, and the private filename must not appear in the regular check. Do not enable private access merely for this test. Unknown/private metadata is deliberately ignored.
+11. Check chrome://extensions for PrivacyLens errors. Inspect popup/worker DevTools Network and Application/Storage: only bundled resources should load, with no outgoing HTTP(S) requests or saved download records. The browser itself makes a request for the user’s chosen download; distinguish that from extension activity. No chrome.storage/localStorage/IndexedDB entries should be created.
+12. Recheck URL findings, site settings, page scans, and extension audit. Check keyboard expansion, narrow popup scrolling, and light/dark mode. Stop the loopback server with Ctrl+C. You may delete fixture downloads yourself through the browser/OS; PrivacyLens never does so.
+
+---
+
 # Personal Chrome checks — Milestone 4
 
 These checks verify the real toolbar access grant and injection, which offline mocks and a layout preview cannot prove. Use desktop Chrome/Chromium 92+; prefer a current release.
